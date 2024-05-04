@@ -1,0 +1,23 @@
+/* themes.css or at the top of App.css */
+:root {
+    --background-color: #ffffff; /* white background for light theme */
+    --text-color: #333333;       /* dark text for light theme */
+    --nav-bg-color: #007bff;     /* blue navbar background for light theme */
+    --nav-text-color: #ffffff;   /* white navbar text for light theme */
+    --dropdown-bg-color: #f8f9fa; /* light grey for dropdowns in light theme */
+    --dropdown-text-color: #333333; /* dark text for dropdowns in light theme */
+    --dropdown-hover-bg-color: #e9ecef; /* light grey hover background for light theme */
+    --dropdown-hover-text-color: #007bff; /* blue hover text for light theme */
+  }
+  
+  :root[data-theme="dark"] {
+    --background-color: #121212; /* very dark background for dark theme */
+    --text-color: #ffdf00;       /* yellow text for dark theme */
+    --nav-bg-color: #000000;     /* black navbar background for dark theme */
+    --nav-text-color: #ffdf00;   /* yellow navbar text for dark theme */
+    --dropdown-bg-color: #333333; /* darker grey for dropdowns in dark theme */
+    --dropdown-text-color: #ffdf00; /* yellow text for dropdowns in dark theme */
+    --dropdown-hover-bg-color: #282828; /* darker grey hover background for dark theme */
+    --dropdown-hover-text-color: #ffee58; /* yellowish hover text for dark theme */
+  }
+  
