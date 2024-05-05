@@ -41,11 +41,11 @@ const YuGiOhCard = ({ card }) => {
   }, [images]); // Dependency array, re-run if images changes
 
   return (
-    <div className="card-container">
-      <div className="card-image">
+    <div className="yugioh-card-container">
+      <div className="yugioh-card-image">
         <img src={imageUrl || fallbackImageUrl} alt={card.name} />
       </div>
-      <div className="card-details">
+      <div className="yugioh-card-details">
         <h2>{card.name}</h2>
         <p>
           <strong>Language:</strong> {card.language}

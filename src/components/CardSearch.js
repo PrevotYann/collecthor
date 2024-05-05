@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Select from "react-select";
 import ReactCountryFlag from "react-country-flag";
+import Switch from "react-switch";
 
 import "../styles/cardsearch.css";
 import PokemonCard from "./PokemonCard";
@@ -100,16 +101,15 @@ const CardSearchComponent = () => {
   const [cardType, setCardType] = useState(cardTypeOptions[0]);
   const [cards, setCards] = useState([]);
   const [language, setLanguage] = useState(null);
-  const [filteredCards, setFilteredCards] = useState([]); // to store filtered results
   const [displayedCards, setDisplayedCards] = useState([]);
   const [currentCount, setCurrentCount] = useState(20);
+  const [showImages, setShowImages] = useState(true);
 
   useEffect(() => {
-    const filtered = cards.filter(
+    const filteredCards = cards.filter(
       (card) => !language || card.language === language.value
     );
-    setFilteredCards(filtered);
-    setDisplayedCards(filtered.slice(0, currentCount));
+    setDisplayedCards(filteredCards.slice(0, currentCount));
   }, [cards, language, currentCount]);
 
   const handleSearch = async () => {
@@ -127,8 +127,6 @@ const CardSearchComponent = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
       setCards([]);
-      setFilteredCards([]);
-      setDisplayedCards([]);
     }
   };
 
@@ -137,15 +135,38 @@ const CardSearchComponent = () => {
   };
 
   const handleSelectChange = (selectedOption) => {
-    setCardType(selectedOption);
     setCards([]);
     setQuery("");
-    setFilteredCards([]);
-    setDisplayedCards([]);
+    setCardType(selectedOption);
   };
 
   const handleLanguageChange = (selectedOption) => {
     setLanguage(selectedOption);
+  };
+
+  const renderCard = (card) => {
+    if (showImages) {
+      return cardType.value === "pokemon" ? (
+        <PokemonCard card={card} key={card.id} />
+      ) : (
+        <YuGiOhCard card={card} key={card.id} />
+      );
+    } else {
+      return (
+        <div className="card-details" key={card.id}>
+          <p>
+            <b>{card.name}</b>
+          </p>
+          <p>
+            {cardType.value === "pokemon"
+              ? `Set Number: ${card.local_id}`
+              : `Set Number: ${card.set_number}`}
+          </p>
+          <p>Rarity: {card.rarity}</p>
+          <p>Language: {card.language}</p>
+        </div>
+      );
+    }
   };
 
   return (
@@ -175,17 +196,20 @@ const CardSearchComponent = () => {
         <button onClick={handleSearch} className="search-button">
           Search
         </button>
+        <label>
+          Show Images
+          <Switch
+            onChange={setShowImages}
+            checked={showImages}
+            offColor="#888"
+            onColor="#0f0"
+          />
+        </label>
       </div>
-      <div className="cards-display">
-        {displayedCards.map((card) =>
-          cardType.value === "pokemon" ? (
-            <PokemonCard card={card} key={card.id} />
-          ) : (
-            <YuGiOhCard card={card} key={card.id} />
-          )
-        )}
+      <div className={showImages ? "cards-display" : ""}>
+        {displayedCards.map(renderCard)}
       </div>
-      {filteredCards.length > displayedCards.length && (
+      {displayedCards.length < cards.length && (
         <button onClick={handleLoadMore} className="load-more-button">
           Load More
         </button>
