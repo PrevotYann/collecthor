@@ -1,0 +1,57 @@
+/* General styling for the search container */
+.search-container {
+    max-width: 1499px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  /* Styling for the search bar */
+  .search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Ensures items are spread out */
+    align-items: center;
+    gap: 10px; /* Provides space between flex items */
+    margin-bottom: 20px;
+  }
+  
+  /* Specific styles for selects and input to ensure they don't stretch too much */
+  .select-dropdown, .search-input {
+    flex: 1 1 240px; /* Allows shrink but also sets a min-width */
+  }
+  
+  .search-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* Grid layout for cards */
+  .cards-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Creates a responsive grid layout */
+    gap: 20px;
+    padding: 20px 0;
+  }
+  
+  /* Button to load more cards */
+  .load-more-button {
+    width: 100%;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  /* Handling larger screens - adjusting the grid to fit more cards or larger cards */
+  @media (min-width: 1400px) {
+    .cards-display {
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Increase min-width of each card */
+    }
+  }
+  
