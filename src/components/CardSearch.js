@@ -104,6 +104,7 @@ const CardSearchComponent = () => {
   const [displayedCards, setDisplayedCards] = useState([]);
   const [currentCount, setCurrentCount] = useState(20);
   const [showImages, setShowImages] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const filteredCards = cards.filter(
@@ -113,6 +114,7 @@ const CardSearchComponent = () => {
   }, [cards, language, currentCount]);
 
   const handleSearch = async () => {
+    setIsLoading(true);
     const baseURLs = {
       pokemon: `${process.env.REACT_APP_API_URL}/cards/pokemon/search?query=`,
       yugioh: `${process.env.REACT_APP_API_URL}/cards/yugioh/search?query=`,
@@ -123,10 +125,12 @@ const CardSearchComponent = () => {
     try {
       const response = await axios.get(url);
       setCards(response.data);
-      setCurrentCount(20); // Reset the count on a new search
+      setIsLoading(false);
+      setCurrentCount(20);
     } catch (error) {
       console.error("Error fetching data:", error);
       setCards([]);
+      setIsLoading(false);
     }
   };
 
@@ -136,6 +140,7 @@ const CardSearchComponent = () => {
 
   const handleSelectChange = (selectedOption) => {
     setCards([]);
+    setDisplayedCards([]);
     setQuery("");
     setCardType(selectedOption);
   };
@@ -196,7 +201,7 @@ const CardSearchComponent = () => {
         <button onClick={handleSearch} className="search-button">
           Search
         </button>
-        <label>
+        <label style={{ display: "contents" }}>
           Show Images
           <Switch
             onChange={setShowImages}
@@ -206,10 +211,19 @@ const CardSearchComponent = () => {
           />
         </label>
       </div>
-      <div className={showImages ? "cards-display" : ""}>
-        {displayedCards.map(renderCard)}
-      </div>
-      {displayedCards.length < cards.length && (
+      {isLoading ? (
+        <div className="loader-container">
+          <div className="inner-loader-container">
+            <div className="loader"></div>
+            <div className="loader-text">Searching for results...</div>
+          </div>
+        </div>
+      ) : (
+        <div className={showImages ? "cards-display" : ""}>
+          {displayedCards.map(renderCard)}
+        </div>
+      )}
+      {!isLoading && displayedCards.length < cards.length && (
         <button onClick={handleLoadMore} className="load-more-button">
           Load More
         </button>

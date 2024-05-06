@@ -5,8 +5,8 @@
     padding: 20px;
   }
   
-  /* Styling for the search bar */
-  .search-bar {
+/* Styling for the search bar */
+.search-bar {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between; /* Ensures items are spread out */
@@ -15,12 +15,37 @@
     margin-bottom: 20px;
   }
   
-  /* Specific styles for selects and input to ensure they don't stretch too much */
-  .select-dropdown, .search-input {
+/* Specific styles for selects and input to ensure they don't stretch too much */
+.select-dropdown{
     flex: 1 1 240px; /* Allows shrink but also sets a min-width */
+    font-size: 16px; /* Adequate font size for better readability */
   }
+
+.search-input {
+  flex: 1 1 480px;  /* Flex settings to allow growth and shrinking with a reasonable minimum width */
+  padding: 8px 12px; /* Comfortable padding inside the input */
+  border: 2px solid #ccc; /* Subtle border */
+  border-radius: 5px; /* Rounded corners for a modern, soft look */
+  outline: none; /* Removes the outline to avoid browser default styles */
+  font-size: 16px; /* Adequate font size for better readability */
+  color: #333; /* Darker text for better readability */
+  background-color: #fff; /* White background to keep it clean and simple */
+  transition: border-color 0.3s; /* Smooth transition for interactions */
+
+  /* Increase the border thickness and change color when the input is focused to give feedback */
+  &:focus {
+      border-color: #0056b3; /* A nice blue that stands out when focused */
+      box-shadow: 0 0 8px rgba(0, 86, 179, 0.2); /* Subtle shadow to 'lift' the element on focus */
+  }
+
+  /* Placeholder styling to match the input style */
+  &::placeholder {
+      color: #aaa; /* Lighter text for placeholders */
+  }
+}
+
   
-  .search-button {
+.search-button {
     padding: 8px 16px;
     background-color: #007bff;
     color: white;
@@ -28,16 +53,16 @@
     cursor: pointer;
   }
   
-  /* Grid layout for cards */
-  .cards-display {
+/* Grid layout for cards */
+.cards-display {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Creates a responsive grid layout */
     gap: 20px;
     padding: 20px 0;
   }
   
-  /* Button to load more cards */
-  .load-more-button {
+/* Button to load more cards */
+.load-more-button {
     width: 100%;
     padding: 10px 20px;
     background-color: #007bff;
@@ -48,8 +73,8 @@
     margin-top: 20px;
   }
   
-  /* Handling larger screens - adjusting the grid to fit more cards or larger cards */
-  @media (min-width: 1400px) {
+/* Handling larger screens - adjusting the grid to fit more cards or larger cards */
+@media (min-width: 1400px) {
     .cards-display {
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Increase min-width of each card */
     }
@@ -72,4 +97,37 @@
     flex: 1;
     text-align: center;
   }
+
+.loader-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px; /* Enough space for the loader and text */
+    text-align: center;
+  }
   
+.inner-loader-container {
+    display: flex;
+    flex-direction: column; /* Stack spinner and text vertically */
+    align-items: center; /* Align horizontally */
+  }
+  
+.loader {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue, can adjust color */
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 2s linear infinite;
+  }
+  
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+.loader-text {
+    margin-top: 10px; /* Space between the loader and the text */
+    font-size: 18px;
+    color: #666;
+  }

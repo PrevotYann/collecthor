@@ -26,7 +26,7 @@ const PokemonCard = ({ card }) => {
           <strong>Rarity:</strong> {card.rarity}
         </p>
         <p>
-          <strong>Rarity:</strong> {card.rarity}
+          <strong>Set number:</strong> {card.local_id}
         </p>
         <p>
           <strong>Stage:</strong> {card.stage}
