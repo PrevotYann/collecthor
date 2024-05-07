@@ -12,7 +12,7 @@ const Login = () => {
     event.preventDefault();
     try {
       await login(username, password);
-      history.push('/');  // redirect to home or user dashboard
+      history.push('/');
     } catch (error) {
       alert('Failed to login');
     }

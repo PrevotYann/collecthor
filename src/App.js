@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./AuthContext";  // Make sure the path is correct
+import { AuthProvider } from "./AuthContext";
 import Header from "./components/Header";
 
 import "./styles/themes.css";
@@ -15,7 +15,7 @@ import Register from "./pages/Register";
 const App = () => {
   return (
     <Router>
-      <AuthProvider>  // Wrap everything that requires auth state with AuthProvider
+      <AuthProvider>
         <Header />
         <div className="main-content">
           <Routes>
