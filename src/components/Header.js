@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
+import { useAuth } from "./AuthContext";
 
 const Header = () => {
+  const { user, logout } = useAuth();
+
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
@@ -21,9 +24,25 @@ const Header = () => {
                 Yu-Gi-Oh!
               </NavDropdown.Item>
             </NavDropdown>
-            <Nav.Link as={Link} to="/user">
-              User
-            </Nav.Link>
+            {user ? (
+              <>
+                <Nav.Link as={Link} to="/user">
+                  {user.username}
+                </Nav.Link>
+                <Nav.Link onClick={logout}>
+                  Logout
+                </Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">
+                  Login
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register">
+                  Register
+                </Nav.Link>
+              </>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>
