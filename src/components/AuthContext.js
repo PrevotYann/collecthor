@@ -9,11 +9,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = async (username, password) => {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("password", password);
+
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/token`, {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/token`,
+        params,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
       setUser({ username, accessToken: response.data.access_token });
     } catch (error) {
       console.error("Login failed:", error);
