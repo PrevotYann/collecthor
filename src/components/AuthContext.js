@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
 const AuthContext = createContext(null);
@@ -23,6 +23,11 @@ export const AuthProvider = ({ children }) => {
           },
         }
       );
+      // Save user data to localStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ username, accessToken: response.data.access_token })
+      );
       setUser({ username, accessToken: response.data.access_token });
     } catch (error) {
       console.error("Login failed:", error);
@@ -31,6 +36,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Remove user data from localStorage
+    localStorage.removeItem("user");
     setUser(null);
   };
 
@@ -48,6 +55,14 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+
+  // Load the user from localStorage when the component mounts
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, register }}>
