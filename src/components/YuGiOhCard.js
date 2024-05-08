@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios"; // Ensure axios is imported
+import { useAuth } from "./AuthContext";
+
 import "../styles/YuGiOhCard.css"; // Path to CSS file
 
 const YuGiOhCard = ({ card }) => {
   const [imageUrl, setImageUrl] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [condition, setCondition] = useState("");
+  const [isFirstEdition, setIsFirstEdition] = useState(false);
+  const [extras, setExtras] = useState("");
   const images = JSON.parse(card.images);
   const fallbackImageUrl = "/yugioh_back_card.webp";
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchImageUrl = async (fileName) => {
-      const apiURL = process.env.REACT_APP_MEDIAWIKI_API_URL; // Make sure to set this in your environment variables
+      const apiURL = process.env.REACT_APP_MEDIAWIKI_API_URL;
 
       try {
         const response = await fetch(
@@ -38,7 +46,25 @@ const YuGiOhCard = ({ card }) => {
     } else {
       setImageUrl(fallbackImageUrl);
     }
-  }, [images]); // Dependency array, re-run if images changes
+  }, [images]);
+
+  const handleAddToCollection = async () => {
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/items/table/cards_yugioh/item/${card.id}/user/${user.username}`,
+        {
+          quantity,
+          condition,
+          extras,
+          isFirstEdition,
+        }
+      );
+      alert("Card added to collection!");
+    } catch (error) {
+      alert("Failed to add card to collection.");
+      console.error(error);
+    }
+  };
 
   return (
     <div className="yugioh-card-container">
@@ -51,11 +77,47 @@ const YuGiOhCard = ({ card }) => {
           <strong>Language:</strong> {card.language}
         </p>
         <p>
-          <strong>Type:</strong> {card.monster_type_line}
+          <strong>Set number:</strong> {card.set_number}
         </p>
         <p>
           <strong>Rarity:</strong> {card.rarity}
         </p>
+        <div>
+          <input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            min="1"
+          />
+          <select
+            value={condition}
+            onChange={(e) => setCondition(e.target.value)}
+          >
+            <option value="">Select Condition</option>
+            <option value="poor">Poor</option>
+            <option value="played">Played</option>
+            <option value="light_played">Light Played</option>
+            <option value="good">Good</option>
+            <option value="excellent">Excellent</option>
+            <option value="near_mint">Near Mint</option>
+            <option value="mint">Mint</option>
+          </select>
+          <label>
+            First Edition?
+            <input
+              type="checkbox"
+              checked={isFirstEdition}
+              onChange={(e) => setIsFirstEdition(e.target.checked)}
+            />
+          </label>
+          <input
+            type="text"
+            value={extras}
+            placeholder="Extras"
+            onChange={(e) => setExtras(e.target.value)}
+          />
+          <button onClick={handleAddToCollection}>Add to Collection</button>
+        </div>
       </div>
     </div>
   );
