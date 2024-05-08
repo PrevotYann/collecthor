@@ -35,6 +35,32 @@
   color: #666;
 }
 
+.add-button, .add-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-form input, .add-form select {
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.add-form label {
+  margin-top: 5px;
+}
+
 @media (max-width: 768px) {
   .pokemon-card-container {
     flex-direction: column;

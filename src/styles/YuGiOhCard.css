@@ -34,7 +34,109 @@
     margin: 4px 0;
     color: #666;
   }
+
+.add-button, .add-form button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
   
+.add-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+.add-form input, .add-form select {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+.add-form label {
+    margin-top: 5px;
+  }
+
+/* The switch container */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Optional: Adds marks for off/on states */
+.slider:after {
+  color: white;
+  display: block;
+  position: absolute;
+  transform: translateX(-50%);
+  top: 50%;
+  left: 25%;
+  font-size: 10px;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+input:checked + .slider:after {
+  left: 75%;
+}
+
+/* Enhanced layout for the surrounding container */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
 @media (max-width: 768px) {
     .yugioh-card-container {
       flex-direction: column;
