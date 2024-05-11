@@ -11,6 +11,7 @@ import YuGiOhCards from "./pages/YuGiOhCards";
 import CardsSearchPage from "./pages/CardsSearchPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import User from "./pages/User";
 
 const App = () => {
   return (
@@ -23,7 +24,7 @@ const App = () => {
             <Route path="/cards" element={<CardsSearchPage />} />
             <Route path="/cards/pokemon" element={<h1>Pokémon Cards</h1>} />
             <Route path="/cards/yugioh" element={<YuGiOhCards />} />
-            <Route path="/user" element={<h1>User Page</h1>} />
+            <Route path="/user" element={<User />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Routes>
