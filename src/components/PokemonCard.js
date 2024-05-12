@@ -1,21 +1,74 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext"; // Ensure the import path is correct
+import { toast } from "react-toastify";
 
 import "../styles/PokemonCard.css"; // Path to CSS file
 
-const PokemonCard = ({ card }) => {
+const aggregateQuantities = (collection) => {
+  return collection.reduce((acc, item) => {
+    const existing = acc.find(
+      (entry) => entry.specific_id === item.specific_id
+    );
+    if (existing) {
+      existing.user_item_details.quantity += item.user_item_details?.quantity;
+    } else {
+      acc.push({
+        ...item,
+        user_item_details: {
+          ...item.user_item_details,
+          quantity: item.user_item_details.quantity,
+        },
+      });
+    }
+    return acc;
+  }, []);
+};
+
+const PokemonCard = ({ card, collection, setCollection }) => {
   const { user } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState("");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [extras, setExtras] = useState("");
+  const aggregatedCollection = aggregateQuantities(collection);
+
+  const cardInCollection = aggregatedCollection.find(
+    (item) => item.specific_id === card.id
+  );
+
+  const fetchCollection = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
+      );
+      setCollection(aggregateQuantities(response.data)); // Assuming you are using aggregation function
+    } catch (error) {
+      console.error("Failed to fetch collection:", error);
+    }
+  };
 
   // Fallback image URL
   const fallbackImageUrl = "/pokemon_back_card.webp";
 
   const handleAddToCollection = async () => {
+    // Create a copy of the new card data for optimistic update
+    const newCardData = {
+      specific_id: card.id,
+      user_item_details: {
+        quantity,
+        condition,
+        extras,
+        is_first_edition: isFirstEdition,
+      },
+      source_item_details: { ...card }, // Assuming the card object has source details
+    };
+
+    // Optimistically update the collection in the UI
+    const optimisticCollection = [...collection, newCardData];
+    setCollection(aggregateQuantities(optimisticCollection));
+
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/items/table/cards_pokemon/item/${card.id}/user/${user.username}`,
@@ -26,16 +79,22 @@ const PokemonCard = ({ card }) => {
           is_first_edition: isFirstEdition,
         }
       );
-      alert("Card added to collection!");
+      toast.success("Card added to collection!");
       setShowAddForm(false);
     } catch (error) {
-      alert("Failed to add card to collection.");
+      toast.error("Failed to add card to collection.");
       console.error(error);
+      // Revert the collection to its previous state if the API call fails
+      setCollection(aggregateQuantities(collection));
     }
   };
 
   return (
-    <div className="pokemon-card-container">
+    <div
+      className={`pokemon-card-container ${
+        cardInCollection ? "in-collection" : ""
+      }`}
+    >
       <div className="pokemon-card-image">
         <img
           src={
@@ -45,6 +104,11 @@ const PokemonCard = ({ card }) => {
           }
           alt={card.name}
         />
+        {cardInCollection && (
+          <div className="quantity-button">
+            {cardInCollection.user_item_details.quantity}
+          </div>
+        )}
       </div>
       <div className="pokemon-card-details">
         <h2>{card.name}</h2>

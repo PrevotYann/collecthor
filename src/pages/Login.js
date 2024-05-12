@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext"; // Ensure path is correct
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -14,7 +15,7 @@ const Login = () => {
       await login(username, password);
       navigate("/");
     } catch (error) {
-      alert(
+      toast.error(
         "Failed to login: " + (error.response?.data.detail || "Unknown Error")
       );
     }

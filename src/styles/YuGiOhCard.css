@@ -136,6 +136,24 @@ input:checked + .slider:after {
   gap: 10px;
 }
 
+.yugioh-card-container.in-collection {
+  background-color: #ccfcff; /* Light green/blue color */
+  border: 1px solid #b2d3f2; /* Slightly darker border for better visibility */
+}
+
+.quantity-button {
+  background-color: #e7f5ff; /* Light blue background for the button */
+  border: none;
+  color: #333;
+  padding: 5px 10px;
+  text-align: center;
+  display: block;
+  margin-top: 5px;
+  cursor: default;
+  border-radius: 5px;
+  font-size: 0.75rem; /* Small text size */
+}
+
 
 @media (max-width: 768px) {
     .yugioh-card-container {

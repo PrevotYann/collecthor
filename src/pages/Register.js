@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../components/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -15,7 +16,7 @@ const Register = () => {
       await register(username, password, email);
       navigate("/"); // redirect after registration
     } catch (error) {
-      alert("Failed to register");
+      toast.error("Failed to register");
     }
   };
 

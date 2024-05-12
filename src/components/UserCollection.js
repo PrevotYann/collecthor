@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import axios from "axios";
 import {
@@ -15,7 +15,14 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
+import { toast } from "react-toastify";
 
 const UserCardsTable = () => {
   const { user } = useAuth();
@@ -23,62 +30,82 @@ const UserCardsTable = () => {
   const [sourceTableFilter, setSourceTableFilter] = useState("");
   const [languageFilter, setLanguageFilter] = useState("");
   const [searchName, setSearchName] = useState("");
-  const [sortBy, setSortBy] = useState("name");
+  const [editItem, setEditItem] = useState(null);
 
+  // Define fetchCollection outside of useEffect
+  const fetchCollection = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
+      );
+      setCollection(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch collection:", error);
+    }
+  };
+
+  // Initial fetch on component mount
   useEffect(() => {
-    const fetchCollection = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
-        );
-        setCollection(response.data || []); // Ensure it defaults to an empty array if null is returned
-      } catch (error) {
-        console.error("Failed to fetch collection:", error);
-      }
-    };
-
     if (user && user.username) {
       fetchCollection();
     }
-  }, [user]); // Only re-run the effect if `user` changes
+  }, [user]); // Dependency on user object
 
-  const filteredCards = useMemo(() => {
-    let results = collection;
-    if (sourceTableFilter) {
-      results = results.filter(
-        (card) => card.source_table === sourceTableFilter
+  const handleEditItem = async () => {
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}/items/${editItem.user_item_id}/user/${user.username}`,
+        {
+          quantity: editItem.quantity,
+          condition: editItem.condition,
+          extras: editItem.extras,
+          is_first_edition: editItem.is_first_edition,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
+      setEditItem(null);
+      fetchCollection();
+      toast.success("Edit successful.");
+      console.log("Edit successful", response.data);
+    } catch (error) {
+      console.error(
+        "Failed to edit item:",
+        error.response ? error.response.data : error
+      );
+      toast.error("Failed to edit item.");
     }
-    if (languageFilter) {
-      results = results.filter(
-        (card) => card.source_item_details.language === languageFilter
+  };
+
+  const handleDelete = async (userItemId) => {
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/items/${userItemId}/user/${user.username}/delete`
       );
+      fetchCollection(); // Refresh the list
+      toast.success("Deleted successfully.");
+    } catch (error) {
+      console.error("Failed to delete item:", error);
+      toast.error("Failed to delete item.");
     }
-    if (searchName) {
-      results = results.filter((card) =>
-        card.source_item_details.name
-          .toLowerCase()
-          .includes(searchName.toLowerCase())
-      );
-    }
-    if (sortBy === "name") {
-      results.sort((a, b) =>
-        a.source_item_details.name.localeCompare(b.source_item_details.name)
-      );
-    } else {
-      results.sort(
-        (a, b) =>
-          new Date(b.user_item_details.added_date) -
-          new Date(a.user_item_details.added_date)
-      );
-    }
-    console.log(results);
-    return results;
-  }, [sourceTableFilter, languageFilter, searchName, sortBy, collection]);
+  };
+
+  const openEditDialog = (card) => {
+    setEditItem({
+      ...card,
+      user_item_id: card.user_item_id,
+      quantity: card.user_item_details.quantity,
+      condition: card.user_item_details.condition || "",
+      extras: card.user_item_details.extras || "",
+      is_first_edition: card.user_item_details.is_first_edition || null,
+    });
+  };
 
   return (
     <div>
-      {/* Filter Controls */}
       <FormControl fullWidth margin="normal">
         <InputLabel id="source-table-filter-label">Source Table</InputLabel>
         <Select
@@ -124,8 +151,8 @@ const UserCardsTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCards.map((card, index) => (
-              <TableRow key={index}>
+            {collection.map((card) => (
+              <TableRow key={card.specific_id}>
                 <TableCell component="th" scope="row">
                   {card.source_item_details.name}
                 </TableCell>
@@ -141,14 +168,84 @@ const UserCardsTable = () => {
                   {card.user_item_details.condition}
                 </TableCell>
                 <TableCell align="right">
-                  <Button onClick={() => console.log("Edit")}>Edit</Button>
-                  <Button onClick={() => console.log("Delete")}>Delete</Button>
+                  <Button onClick={() => openEditDialog(card)}>Edit</Button>
+                  <Button onClick={() => handleDelete(card.user_item_id)}>
+                    Delete
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Edit Dialog */}
+      {editItem && (
+        <Dialog open={Boolean(editItem)} onClose={() => setEditItem(null)}>
+          <DialogTitle>Edit Item</DialogTitle>
+          <DialogContent>
+            <TextField
+              margin="dense"
+              label="Quantity"
+              type="number"
+              fullWidth
+              value={editItem.quantity}
+              onChange={(e) =>
+                setEditItem({
+                  ...editItem,
+                  quantity: parseInt(e.target.value, 10) || 0,
+                })
+              }
+            />
+            <FormControl fullWidth margin="dense">
+              <InputLabel id="condition-label">Condition</InputLabel>
+              <Select
+                labelId="condition-label"
+                value={editItem.condition}
+                label="Condition"
+                onChange={(e) =>
+                  setEditItem({ ...editItem, condition: e.target.value })
+                }
+              >
+                <MenuItem value="poor">Poor</MenuItem>
+                <MenuItem value="played">Played</MenuItem>
+                <MenuItem value="light_played">Light Played</MenuItem>
+                <MenuItem value="good">Good</MenuItem>
+                <MenuItem value="excellent">Excellent</MenuItem>
+                <MenuItem value="near_mint">Near Mint</MenuItem>
+                <MenuItem value="mint">Mint</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              margin="dense"
+              label="Extras"
+              fullWidth
+              value={editItem.extras}
+              onChange={(e) =>
+                setEditItem({ ...editItem, extras: e.target.value })
+              }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={editItem.is_first_edition}
+                  onChange={(e) =>
+                    setEditItem({
+                      ...editItem,
+                      is_first_edition: e.target.checked,
+                    })
+                  }
+                />
+              }
+              label="Is First Edition"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditItem(null)}>Cancel</Button>
+            <Button onClick={handleEditItem}>Save</Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 };

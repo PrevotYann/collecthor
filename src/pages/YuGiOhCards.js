@@ -1,10 +1,12 @@
 import React from "react";
+import YugiohCardsetsBrowser from "../components/YugiohCardsetsBrowser";
 
 const YuGiOhCards = () => {
   return (
     <div>
       <h1>Yu-Gi-Oh Cards</h1>
-      <p>This page will display information about Yu-Gi-Oh cards.</p>
+      <hr />
+      <YugiohCardsetsBrowser />
     </div>
   );
 };
