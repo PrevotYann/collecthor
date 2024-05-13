@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import "../styles/PokemonCard.css"; // Path to CSS file
 
 const aggregateQuantities = (collection) => {
-  return collection.reduce((acc, item) => {
+  return collection?.reduce((acc, item) => {
     const existing = acc.find(
       (entry) => entry.specific_id === item.specific_id
     );
