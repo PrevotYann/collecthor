@@ -29,7 +29,7 @@ const PokemonCard = ({ card, collection, setCollection }) => {
   const { user } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState("");
+  const [condition, setCondition] = useState("near_mint");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [extras, setExtras] = useState("");
   const aggregatedCollection = aggregateQuantities(collection);
@@ -37,17 +37,6 @@ const PokemonCard = ({ card, collection, setCollection }) => {
   const cardInCollection = aggregatedCollection.find(
     (item) => item.specific_id === card.id
   );
-
-  const fetchCollection = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
-      );
-      setCollection(aggregateQuantities(response.data)); // Assuming you are using aggregation function
-    } catch (error) {
-      console.error("Failed to fetch collection:", error);
-    }
-  };
 
   // Fallback image URL
   const fallbackImageUrl = "/pokemon_back_card.webp";

@@ -28,7 +28,7 @@ const aggregateQuantities = (collection) => {
 const YuGiOhCard = ({ card, collection, setCollection }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState("");
+  const [condition, setCondition] = useState("near_mint");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [extras, setExtras] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
