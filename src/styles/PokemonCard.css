@@ -79,6 +79,15 @@
   font-size: 0.75rem; /* Small text size */
 }
 
+.price-button {
+  background-color: #ffae00;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+}
 
 @media (max-width: 768px) {
   .pokemon-card-container {

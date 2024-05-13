@@ -61,6 +61,26 @@
     margin-top: 5px;
   }
 
+.price-button {
+    background-color: #ffae00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+
+.view-prices-button {
+    background-color: #00c468;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+
 /* The switch container */
 .toggle-switch {
   position: relative;
@@ -155,6 +175,25 @@ input:checked + .slider:after {
 }
 
 
+.price-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 10px;
+  background: #f1f1f1;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.price-entry {
+  padding: 4px;
+  border-bottom: 1px solid #eee;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+
 @media (max-width: 768px) {
     .yugioh-card-container {
       flex-direction: column;
@@ -170,5 +209,9 @@ input:checked + .slider:after {
       width: 50%; /* Adjust size as needed for mobile */
       margin: 0 auto; /* Center the image when in column layout */
     }
-}
+
+    .price-entry {
+      flex-basis: 100%;
+    }
   
+}

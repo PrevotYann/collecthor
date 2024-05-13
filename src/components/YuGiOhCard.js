@@ -25,6 +25,57 @@ const aggregateQuantities = (collection) => {
   }, []);
 };
 
+const updatePrices = async (card) => {
+  const conditions = [
+    "poor",
+    "played",
+    "light_played",
+    "good",
+    "excellent",
+    "near_mint",
+    "mint",
+  ];
+  for (let condition of conditions) {
+    const url = `${
+      process.env.REACT_APP_API_URL
+    }/items/table/cards_yugioh/item/${
+      card.id
+    }/condition/${condition}/first/${true}/ebay/price`;
+    const response = await axios.post(url);
+    try {
+      if (response.data) {
+        toast.success(
+          `Price updated (${condition} 1st | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+        );
+      } else {
+        toast.info("No new pricing information available.");
+      }
+    } catch (error) {
+      toast.error("Failed to update price.");
+      console.error("Price update error:", error);
+    }
+
+    const url2 = `${
+      process.env.REACT_APP_API_URL
+    }/items/table/cards_yugioh/item/${
+      card.id
+    }/condition/${condition}/first/${false}/ebay/price`;
+    const response2 = await axios.post(url2);
+    try {
+      if (response2.data) {
+        toast.success(
+          `Price updated (${condition} | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+        );
+      } else {
+        toast.info("No new pricing information available.");
+      }
+    } catch (error) {
+      toast.error("Failed to update price.");
+      console.error("Price update error:", error);
+    }
+  }
+};
+
 const YuGiOhCard = ({ card, collection, setCollection }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -32,6 +83,8 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [extras, setExtras] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [priceData, setPriceData] = useState([]);
+  const [viewPrices, setViewPrices] = useState(false);
   const { user } = useAuth();
   const aggregatedCollection = aggregateQuantities(collection);
 
@@ -47,6 +100,18 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
       setCollection(aggregateQuantities(response.data)); // Assuming you are using aggregation function
     } catch (error) {
       console.error("Failed to fetch collection:", error);
+    }
+  };
+
+  const fetchPriceData = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/table/${card.table_name}/item/${card.id}/ebay/prices/all`
+      );
+      setPriceData(response.data);
+    } catch (error) {
+      console.error("Failed to fetch price data:", error);
+      toast.error("Failed to fetch price data.");
     }
   };
 
@@ -76,6 +141,21 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
 
     fetchImageUrl();
   }, [card.images]);
+
+  useEffect(() => {
+    const fetchPriceData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/items/table/cards_yugioh/item/${card.id}/ebay/prices/all`
+        );
+        setPriceData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch price data:", error);
+      }
+    };
+
+    fetchPriceData();
+  }, [card.id]);
 
   const handleAddToCollection = async () => {
     const newCard = {
@@ -131,11 +211,22 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
         <p>
           <strong>Rarity:</strong> {card.rarity}
         </p>
-        {user && !showAddForm && (
-          <button className="add-button" onClick={() => setShowAddForm(true)}>
-            Add to Collection
+        <div style={{ display: "flex", gap: "16px" }}>
+          {user && !showAddForm && (
+            <button className="add-button" onClick={() => setShowAddForm(true)}>
+              Add to Collection
+            </button>
+          )}
+          <button className="price-button" onClick={() => updatePrices(card)}>
+            Update Price
           </button>
-        )}
+          <button
+            className="view-prices-button"
+            onClick={() => setViewPrices(!viewPrices)}
+          >
+            View Prices
+          </button>
+        </div>
         {user && showAddForm && (
           <div className="add-form">
             <input
@@ -178,6 +269,21 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
             <button onClick={handleAddToCollection}>Add</button>
             <button onClick={() => setShowAddForm(false)}>Cancel</button>
           </div>
+        )}
+        {viewPrices && priceData.length > 0 ? (
+          <div className="price-details">
+            {priceData.map((price) => (
+              <div key={price.id} className="price-entry">
+                <p>
+                  {price.condition} {price.is_first_edition ? "(1st)" : ""}
+                </p>
+                <p>Lowest: ${price.ebay_lowest}</p>
+                <p>Median: ${price.ebay_median}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          ""
         )}
       </div>
     </div>

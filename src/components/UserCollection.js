@@ -147,12 +147,15 @@ const UserCardsTable = () => {
               <TableCell align="right">Set Number</TableCell>
               <TableCell align="right">Quantity</TableCell>
               <TableCell align="right">Condition</TableCell>
+              <TableCell align="right">Low Price</TableCell>
+              <TableCell align="right">High Price</TableCell>
+              <TableCell align="right">Median Price</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {collection.map((card) => (
-              <TableRow key={card.specific_id}>
+            {collection.map((card, index) => (
+              <TableRow key={index}>
                 <TableCell component="th" scope="row">
                   {card.source_item_details.name}
                 </TableCell>
@@ -166,6 +169,27 @@ const UserCardsTable = () => {
                 </TableCell>
                 <TableCell align="right">
                   {card.user_item_details.condition}
+                </TableCell>
+                <TableCell align="right">
+                  {card.prices.low + card.prices.currency === "DOLLAR"
+                    ? "$"
+                    : card.prices.currency === "EURO"
+                    ? "€"
+                    : ""}
+                </TableCell>
+                <TableCell align="right">
+                  {card.prices.high + card.prices.currency === "DOLLAR"
+                    ? "$"
+                    : card.prices.currency === "EURO"
+                    ? "€"
+                    : ""}
+                </TableCell>
+                <TableCell align="right">
+                  {card.prices.median + card.prices.currency === "DOLLAR"
+                    ? "$"
+                    : card.prices.currency === "EURO"
+                    ? "€"
+                    : ""}
                 </TableCell>
                 <TableCell align="right">
                   <Button onClick={() => openEditDialog(card)}>Edit</Button>

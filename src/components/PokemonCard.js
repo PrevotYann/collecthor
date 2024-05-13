@@ -25,6 +25,57 @@ const aggregateQuantities = (collection) => {
   }, []);
 };
 
+const updatePrices = async (card) => {
+  const conditions = [
+    "poor",
+    "played",
+    "light_played",
+    "good",
+    "excellent",
+    "near_mint",
+    "mint",
+  ];
+  for (let condition of conditions) {
+    const url = `${
+      process.env.REACT_APP_API_URL
+    }/items/table/cards_pokemon/item/${
+      card.id
+    }/condition/${condition}/first/${true}/ebay/price`;
+    const response = await axios.post(url);
+    try {
+      if (response.data) {
+        toast.success(
+          `Price updated (${condition} 1st | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+        );
+      } else {
+        toast.info("No new pricing information available.");
+      }
+    } catch (error) {
+      toast.error("Failed to update price.");
+      console.error("Price update error:", error);
+    }
+
+    const url2 = `${
+      process.env.REACT_APP_API_URL
+    }/items/table/cards_pokemon/item/${
+      card.id
+    }/condition/${condition}/first/${false}/ebay/price`;
+    const response2 = await axios.post(url2);
+    try {
+      if (response2.data) {
+        toast.success(
+          `Price updated (${condition} | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+        );
+      } else {
+        toast.info("No new pricing information available.");
+      }
+    } catch (error) {
+      toast.error("Failed to update price.");
+      console.error("Price update error:", error);
+    }
+  }
+};
+
 const PokemonCard = ({ card, collection, setCollection }) => {
   const { user } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -115,6 +166,9 @@ const PokemonCard = ({ card, collection, setCollection }) => {
             Add to Collection
           </button>
         )}
+        <button className="price-button" onClick={() => updatePrices(card)}>
+          Update Price
+        </button>
         {user && showAddForm && (
           <div className="add-form">
             <input
