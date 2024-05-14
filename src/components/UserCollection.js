@@ -171,25 +171,25 @@ const UserCardsTable = () => {
                   {card.user_item_details.condition}
                 </TableCell>
                 <TableCell align="right">
-                  {card.prices.low + card.prices.currency === "DOLLAR"
+                  {card.prices.low.concat(card.prices.currency === "DOLLAR"
                     ? "$"
                     : card.prices.currency === "EURO"
                     ? "€"
-                    : ""}
+                    : "")}
                 </TableCell>
                 <TableCell align="right">
-                  {card.prices.high + card.prices.currency === "DOLLAR"
+                  {card.prices.high.concat(card.prices.currency === "DOLLAR"
                     ? "$"
                     : card.prices.currency === "EURO"
                     ? "€"
-                    : ""}
+                    : "")}
                 </TableCell>
                 <TableCell align="right">
-                  {card.prices.median + card.prices.currency === "DOLLAR"
+                  {card.prices.median.concat(card.prices.currency === "DOLLAR"
                     ? "$"
                     : card.prices.currency === "EURO"
                     ? "€"
-                    : ""}
+                    : "")}
                 </TableCell>
                 <TableCell align="right">
                   <Button onClick={() => openEditDialog(card)}>Edit</Button>
