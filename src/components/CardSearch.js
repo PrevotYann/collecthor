@@ -171,9 +171,9 @@ const CardSearchComponent = () => {
   const renderCard = (card) => {
     if (showImages) {
       return cardType.value === "pokemon" ? (
-        <PokemonCard card={card} key={card.id} setCollection={setCollection}/>
+        <PokemonCard card={card} key={card.id} collection={collection} setCollection={setCollection}/>
       ) : (
-        <YuGiOhCard card={card} key={card.id} setCollection={setCollection}/>
+        <YuGiOhCard card={card} key={card.id} collection={collection} setCollection={setCollection}/>
       );
     } else {
       return (

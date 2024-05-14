@@ -194,8 +194,11 @@ const UserCardsTable = () => {
   };
 
   const filteredCollection = collection.filter(card =>
+    (sourceTableFilter === "" || card.source_table === sourceTableFilter) &&
+    (languageFilter === "" || card.language === languageFilter) &&
     card.source_item_details.name.toLowerCase().includes(searchName.toLowerCase())
   );
+
 
   return (
     <div>
