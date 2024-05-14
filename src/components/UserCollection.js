@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import axios from "axios";
+import ReactCountryFlag from "react-country-flag";
 import {
   Table,
   TableBody,
@@ -22,7 +23,97 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { toast } from "react-toastify";
+
+const cardTypeOptions = [
+  { value: "cards_pokemon", label: "Pokémon" },
+  { value: "cards_yugioh", label: "Yu-Gi-Oh!" },
+];
+
+const languageOptions = [
+  {
+    value: "en",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="GB" svg /> English
+      </span>
+    ),
+  },
+  {
+    value: "fr",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="FR" svg /> Français
+      </span>
+    ),
+  },
+  {
+    value: "es",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="ES" svg /> Español
+      </span>
+    ),
+  },
+  {
+    value: "de",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="DE" svg /> Deutsch
+      </span>
+    ),
+  },
+  {
+    value: "it",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="IT" svg /> Italian
+      </span>
+    ),
+  },
+  {
+    value: "pt",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="PT" svg /> Portuguese
+      </span>
+    ),
+  },
+  {
+    value: "jp",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="JP" svg /> Japanese
+      </span>
+    ),
+  },
+  {
+    value: "ko",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="KR" svg /> Korean
+      </span>
+    ),
+  },
+  {
+    value: "zh-CN",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="CN" svg /> Chinese
+      </span>
+    ),
+  },
+  {
+    value: "zh-TW",
+    label: (
+      <span>
+        <ReactCountryFlag countryCode="TW" svg /> Taiwan
+      </span>
+    ),
+  },
+];
 
 const UserCardsTable = () => {
   const { user } = useAuth();
@@ -32,7 +123,6 @@ const UserCardsTable = () => {
   const [searchName, setSearchName] = useState("");
   const [editItem, setEditItem] = useState(null);
 
-  // Define fetchCollection outside of useEffect
   const fetchCollection = async () => {
     try {
       const response = await axios.get(
@@ -44,12 +134,11 @@ const UserCardsTable = () => {
     }
   };
 
-  // Initial fetch on component mount
   useEffect(() => {
     if (user && user.username) {
       fetchCollection();
     }
-  }, [user]); // Dependency on user object
+  }, [user]);
 
   const handleEditItem = async () => {
     try {
@@ -104,6 +193,10 @@ const UserCardsTable = () => {
     });
   };
 
+  const filteredCollection = collection.filter(card =>
+    card.source_item_details.name.toLowerCase().includes(searchName.toLowerCase())
+  );
+
   return (
     <div>
       <FormControl fullWidth margin="normal">
@@ -114,8 +207,11 @@ const UserCardsTable = () => {
           onChange={(e) => setSourceTableFilter(e.target.value)}
         >
           <MenuItem value="">All</MenuItem>
-          <MenuItem value="cards_yugioh">Yu-Gi-Oh</MenuItem>
-          <MenuItem value="cards_pokemon">Pokémon</MenuItem>
+          {cardTypeOptions.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl fullWidth margin="normal">
@@ -126,8 +222,11 @@ const UserCardsTable = () => {
           onChange={(e) => setLanguageFilter(e.target.value)}
         >
           <MenuItem value="">All</MenuItem>
-          <MenuItem value="fr">French</MenuItem>
-          <MenuItem value="en">English</MenuItem>
+          {languageOptions.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <TextField
@@ -138,7 +237,6 @@ const UserCardsTable = () => {
         onChange={(e) => setSearchName(e.target.value)}
       />
 
-      {/* Data Table Display */}
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
@@ -147,6 +245,7 @@ const UserCardsTable = () => {
               <TableCell align="right">Set Number</TableCell>
               <TableCell align="right">Quantity</TableCell>
               <TableCell align="right">Condition</TableCell>
+              <TableCell align="right">1st ed.</TableCell>
               <TableCell align="right">Low Price</TableCell>
               <TableCell align="right">High Price</TableCell>
               <TableCell align="right">Median Price</TableCell>
@@ -154,7 +253,7 @@ const UserCardsTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {collection.map((card, index) => (
+            {filteredCollection.map((card, index) => (
               <TableRow key={index}>
                 <TableCell component="th" scope="row">
                   {card.source_item_details.name}
@@ -169,6 +268,13 @@ const UserCardsTable = () => {
                 </TableCell>
                 <TableCell align="right">
                   {card.user_item_details.condition}
+                </TableCell>
+                <TableCell align="right">
+                  {card.user_item_details.is_first_edition ? (
+                    <CheckCircleIcon style={{ color: 'green' }} />
+                  ) : (
+                    <RemoveCircleOutlineIcon style={{ color: 'red' }} />
+                  )}
                 </TableCell>
                 <TableCell align="right">
                   {card.prices.low ? card.prices.low.concat(card.prices.currency === "DOLLAR"
@@ -203,7 +309,6 @@ const UserCardsTable = () => {
         </Table>
       </TableContainer>
 
-      {/* Edit Dialog */}
       {editItem && (
         <Dialog open={Boolean(editItem)} onClose={() => setEditItem(null)}>
           <DialogTitle>Edit Item</DialogTitle>

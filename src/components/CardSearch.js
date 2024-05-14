@@ -3,6 +3,7 @@ import axios from "axios";
 import Select from "react-select";
 import ReactCountryFlag from "react-country-flag";
 import Switch from "react-switch";
+import { useAuth } from "./AuthContext";
 
 import "../styles/cardsearch.css";
 import PokemonCard from "./PokemonCard";
@@ -97,6 +98,7 @@ const languageOptions = [
 ];
 
 const CardSearchComponent = () => {
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [cardType, setCardType] = useState(cardTypeOptions[0]);
   const [cards, setCards] = useState([]);
@@ -105,6 +107,23 @@ const CardSearchComponent = () => {
   const [currentCount, setCurrentCount] = useState(20);
   const [showImages, setShowImages] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [collection, setCollection] = useState(false);
+    const fetchCollection = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
+        );
+        setCollection(response.data || []);
+      } catch (error) {
+        console.error("Failed to fetch collection:", error);
+      }
+    };
+
+  useEffect(() => {
+    if (user && user.username) {
+      fetchCollection();
+    }
+  }, [user]);
 
   useEffect(() => {
     const filteredCards = cards.filter(
@@ -152,9 +171,9 @@ const CardSearchComponent = () => {
   const renderCard = (card) => {
     if (showImages) {
       return cardType.value === "pokemon" ? (
-        <PokemonCard card={card} key={card.id} />
+        <PokemonCard card={card} key={card.id} setCollection={setCollection}/>
       ) : (
-        <YuGiOhCard card={card} key={card.id} />
+        <YuGiOhCard card={card} key={card.id} setCollection={setCollection}/>
       );
     } else {
       return (
