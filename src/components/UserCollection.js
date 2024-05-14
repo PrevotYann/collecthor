@@ -122,6 +122,8 @@ const UserCardsTable = () => {
   const [languageFilter, setLanguageFilter] = useState("");
   const [searchName, setSearchName] = useState("");
   const [editItem, setEditItem] = useState(null);
+  const [isEuroDisplayed, setIsEuroDisplayed] = useState(false);
+  const EURO_TO_DOLLAR_RATE = 1.07748;
 
   const fetchCollection = async () => {
     try {
@@ -199,6 +201,26 @@ const UserCardsTable = () => {
     card.source_item_details.name.toLowerCase().includes(searchName.toLowerCase())
   );
 
+  const calculateTotalPrices = (cards, isEuroDisplayed) => {
+    let totalLow = 0, totalHigh = 0, totalMedian = 0, totalMean = 0;
+  
+    cards.forEach(card => {
+      let factor = 1; // Default factor for DOLLAR
+      if (card.prices.currency === "EURO" && !isEuroDisplayed) {
+        factor = EURO_TO_DOLLAR_RATE;
+      }
+  
+      totalLow += parseFloat(card.prices.low || 0) * factor;
+      totalHigh += parseFloat(card.prices.high || 0) * factor;
+      totalMedian += parseFloat(card.prices.median || 0) * factor;
+      totalMean += parseFloat(card.prices.mean || 0) * factor;
+    });
+  
+    return { totalLow, totalHigh, totalMedian, totalMean };
+  };  
+  
+  const totals = calculateTotalPrices(filteredCollection, isEuroDisplayed);
+
 
   return (
     <div>
@@ -255,6 +277,26 @@ const UserCardsTable = () => {
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 20 }}>
+            <Button onClick={() => setIsEuroDisplayed(!isEuroDisplayed)} variant="contained" style={{ marginBottom: 10 }}>
+              {isEuroDisplayed ? "Show in $" : "Show in €"}
+            </Button>
+            {['Low', 'High', 'Median', 'Mean'].map((key) => (
+              <Card key={key} variant="outlined">
+                <CardContent>
+                  <Typography color="textSecondary" gutterBottom>
+                    Total {key} Price
+                  </Typography>
+                  <Typography variant="h5">
+                    {(isEuroDisplayed ? '€' : '$') + totals[`total${key}`].toFixed(2)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button onClick={() => setIsEuroDisplayed(!isEuroDisplayed)}>
+            {isEuroDisplayed ? "Show in $" : "Show in €"}
+          </Button>
           <TableBody>
             {filteredCollection.map((card, index) => (
               <TableRow key={index}>
