@@ -167,7 +167,7 @@ const PokemonCard = ({ card, collection, setCollection }) => {
           </button>
         )}
         <button className="price-button" onClick={() => updatePrices(card)}>
-          Update Price
+          Update Prices
         </button>
         {user && showAddForm && (
           <div className="add-form">

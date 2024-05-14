@@ -218,7 +218,7 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
             </button>
           )}
           <button className="price-button" onClick={() => updatePrices(card)}>
-            Update Price
+            Update Prices
           </button>
           <button
             className="view-prices-button"
