@@ -79,7 +79,13 @@ const updatePrices = async (card) => {
   }
 };
 
-const YuGiOhCard = ({ card, collection, setCollection }) => {
+const YuGiOhCard = ({
+  card,
+  collection,
+  setCollection,
+  selectedCardIds,
+  setSelectedCardIds,
+}) => {
   const [imageUrl, setImageUrl] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState("near_mint");
@@ -88,6 +94,7 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [priceData, setPriceData] = useState([]);
   const [viewPrices, setViewPrices] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   const { user } = useAuth();
   const aggregatedCollection = aggregateQuantities(collection);
 
@@ -177,12 +184,29 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
     }
   };
 
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+    if (!isChecked) {
+      setSelectedCardIds([...selectedCardIds, card.id]);
+    } else {
+      setSelectedCardIds(selectedCardIds.filter((id) => id !== card.id));
+    }
+  };
+
   return (
     <div
       className={`yugioh-card-container ${
         cardInCollection ? "in-collection" : ""
       }`}
     >
+      <div className="select-checkbox">
+        <input
+          style={{ marginRight: "1rem" }}
+          type="checkbox"
+          checked={isChecked}
+          onChange={handleCheckboxChange}
+        />
+      </div>
       <div className="yugioh-card-image">
         <img src={imageUrl} alt={card.name} />
         {cardInCollection && (

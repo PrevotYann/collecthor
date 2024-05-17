@@ -362,8 +362,9 @@ const UserCardsTable = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
+                <TableCell>Type</TableCell>
                 <TableCell>Language</TableCell>
-                <TableCell>Table</TableCell>
+                <TableCell>Number</TableCell>
                 <TableCell onClick={() => handleSort("prices.low")}>
                   Low{" "}
                   {sortConfig.key === "prices.low" &&
@@ -402,7 +403,6 @@ const UserCardsTable = () => {
                 </TableCell>
                 <TableCell>Quantity</TableCell>
                 <TableCell>Condition</TableCell>
-                <TableCell>Extras</TableCell>
                 <TableCell>First Edition</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -411,6 +411,7 @@ const UserCardsTable = () => {
               {sortedCollection.map((card) => (
                 <TableRow key={card.user_item_id}>
                   <TableCell>{card.source_item_details.name}</TableCell>
+                  <TableCell>{cardTypeDisplay[card.source_table]}</TableCell>
                   <TableCell>
                     {
                       languageOptions.find(
@@ -419,7 +420,13 @@ const UserCardsTable = () => {
                       )?.label
                     }
                   </TableCell>
-                  <TableCell>{cardTypeDisplay[card.source_table]}</TableCell>
+                  <TableCell>
+                    {card.source_table === "cards_pokemon"
+                      ? card.source_item_details.local_id
+                      : card.source_table === "cards_yugioh"
+                      ? card.source_item_details.set_number
+                      : ""}
+                  </TableCell>
                   <TableCell>
                     {isEuroDisplayed && card.prices.currency === "DOLLAR"
                       ? (card.prices.low / EURO_TO_DOLLAR_RATE).toFixed(2)
@@ -452,7 +459,6 @@ const UserCardsTable = () => {
                   <TableCell>
                     {conditionOptions[card.user_item_details.condition]}
                   </TableCell>
-                  <TableCell>{card.user_item_details.extras}</TableCell>
                   <TableCell>
                     <Checkbox
                       checked={card.user_item_details.is_first_edition}
