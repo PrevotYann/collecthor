@@ -33,7 +33,7 @@ const YugiohCardsetsBrowser = () => {
   const [selectedCards, setSelectedCards] = useState([]);
   const [selectedCardIds, setSelectedCardIds] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState("");
+  const [condition, setCondition] = useState("near_mint");
   const [extras, setExtras] = useState("");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [showAddPopup, setShowAddPopup] = useState(false);
@@ -243,7 +243,15 @@ const YugiohCardsetsBrowser = () => {
           )}
 
           <Dialog open={showAddPopup} onClose={() => setShowAddPopup(false)}>
-            <DialogTitle>Bulk Add Cards</DialogTitle>
+            <DialogTitle
+              style={{
+                textAlign: "center",
+                backgroundColor: "#f0f0f0",
+                marginBottom: "16px",
+              }}
+            >
+              Bulk Add Cards
+            </DialogTitle>
             <DialogContent>
               <TextField
                 type="number"
@@ -252,8 +260,9 @@ const YugiohCardsetsBrowser = () => {
                 min="1"
                 placeholder="Quantity"
                 fullWidth
+                style={{ marginBottom: "16px" }}
               />
-              <FormControl fullWidth>
+              <FormControl fullWidth style={{ marginBottom: "16px" }}>
                 <InputLabel>Condition</InputLabel>
                 <Select
                   value={condition}
@@ -287,6 +296,7 @@ const YugiohCardsetsBrowser = () => {
                 placeholder="Extras"
                 onChange={(e) => setExtras(e.target.value)}
                 fullWidth
+                style={{ marginTop: "16px" }}
               />
             </DialogContent>
             <DialogActions>

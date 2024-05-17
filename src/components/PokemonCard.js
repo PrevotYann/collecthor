@@ -79,7 +79,13 @@ const updatePrices = async (card) => {
   }
 };
 
-const PokemonCard = ({ card, collection, setCollection }) => {
+const PokemonCard = ({
+  card,
+  collection,
+  setCollection,
+  selectedCardIds,
+  setSelectedCardIds,
+}) => {
   const { user } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -88,6 +94,7 @@ const PokemonCard = ({ card, collection, setCollection }) => {
   const [extras, setExtras] = useState("");
   const [priceData, setPriceData] = useState([]);
   const [viewPrices, setViewPrices] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   const aggregatedCollection = aggregateQuantities(collection);
 
   const cardInCollection = aggregatedCollection.find(
@@ -149,12 +156,29 @@ const PokemonCard = ({ card, collection, setCollection }) => {
     }
   };
 
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+    if (!isChecked) {
+      setSelectedCardIds([...selectedCardIds, card.id]);
+    } else {
+      setSelectedCardIds(selectedCardIds.filter((id) => id !== card.id));
+    }
+  };
+
   return (
     <div
       className={`pokemon-card-container ${
         cardInCollection ? "in-collection" : ""
       }`}
     >
+      <div className="select-checkbox">
+        <input
+          style={{ marginRight: "1rem" }}
+          type="checkbox"
+          checked={isChecked}
+          onChange={handleCheckboxChange}
+        />
+      </div>
       <div className="pokemon-card-image">
         <img
           src={

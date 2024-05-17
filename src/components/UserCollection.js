@@ -162,6 +162,7 @@ const UserCardsTable = () => {
     if (user && user.username) {
       fetchCollection();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleEditItem = async () => {
@@ -365,6 +366,7 @@ const UserCardsTable = () => {
                 <TableCell>Type</TableCell>
                 <TableCell>Language</TableCell>
                 <TableCell>Number</TableCell>
+                <TableCell>Rarity</TableCell>
                 <TableCell onClick={() => handleSort("prices.low")}>
                   Low{" "}
                   {sortConfig.key === "prices.low" &&
@@ -401,9 +403,9 @@ const UserCardsTable = () => {
                       <ArrowDownwardIcon />
                     ))}
                 </TableCell>
-                <TableCell>Quantity</TableCell>
+                <TableCell>Qty</TableCell>
                 <TableCell>Condition</TableCell>
-                <TableCell>First Edition</TableCell>
+                <TableCell>1st Ed.</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -427,6 +429,7 @@ const UserCardsTable = () => {
                       ? card.source_item_details.set_number
                       : ""}
                   </TableCell>
+                  <TableCell>{card.source_item_details.rarity}</TableCell>
                   <TableCell>
                     {isEuroDisplayed && card.prices.currency === "DOLLAR"
                       ? (card.prices.low / EURO_TO_DOLLAR_RATE).toFixed(2)

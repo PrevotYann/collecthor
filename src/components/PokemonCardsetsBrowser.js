@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PokemonCard from "./PokemonCard"; // Import the card component
 import { useAuth } from "./AuthContext";
+import { toast } from "react-toastify";
 
 import {
   Button,
@@ -15,6 +16,10 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 
 import "../styles/CardsetsBrowsers.css";
@@ -31,6 +36,12 @@ const PorkemonCardsetsBrowser = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [cardsPerPage] = useState(10);
   const [showCardsets, setShowCardsets] = useState(true);
+  const [selectedCardIds, setSelectedCardIds] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [condition, setCondition] = useState("near_mint");
+  const [extras, setExtras] = useState("");
+  const [isFirstEdition, setIsFirstEdition] = useState(false);
+  const [showAddPopup, setShowAddPopup] = useState(false);
 
   const toggleCardsetsVisibility = () => {
     setShowCardsets(!showCardsets);
@@ -115,6 +126,27 @@ const PorkemonCardsetsBrowser = () => {
     const inCollection = collection.find((c) => c.specific_id === card.id);
     return inCollection ? acc + 1 : acc;
   }, 0);
+
+  const handleBulkAdd = async () => {
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/items/table/cards_pokemon/items/user/${user.username}`,
+        {
+          item_ids: selectedCardIds,
+          quantity,
+          condition,
+          extras,
+          is_first_edition: isFirstEdition,
+        }
+      );
+      toast.success("Cards added to collection!");
+      fetchCollection();
+      setShowAddPopup(false);
+    } catch (error) {
+      toast.error("Failed to add cards to collection.");
+      console.error(error);
+    }
+  };
 
   return (
     <div>
@@ -211,12 +243,81 @@ const PorkemonCardsetsBrowser = () => {
           <h2>
             {cardsetName} : {cardCount}/{selectedCards.length}
           </h2>{" "}
+          {selectedCardIds && selectedCardIds.length > 0 ? (
+            <Button onClick={() => setShowAddPopup(true)}>Bulk Add</Button>
+          ) : (
+            ""
+          )}
+          <Dialog open={showAddPopup} onClose={() => setShowAddPopup(false)}>
+            <DialogTitle
+              style={{
+                textAlign: "center",
+                backgroundColor: "#f0f0f0",
+                marginBottom: "16px",
+              }}
+            >
+              Bulk Add Cards
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                min="1"
+                placeholder="Quantity"
+                fullWidth
+                style={{ marginBottom: "16px" }}
+              />
+              <FormControl fullWidth style={{ marginBottom: "16px" }}>
+                <InputLabel>Condition</InputLabel>
+                <Select
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                  fullWidth
+                >
+                  <MenuItem value="">Select Condition</MenuItem>
+                  <MenuItem value="poor">Poor</MenuItem>
+                  <MenuItem value="played">Played</MenuItem>
+                  <MenuItem value="light_played">Light Played</MenuItem>
+                  <MenuItem value="good">Good</MenuItem>
+                  <MenuItem value="excellent">Excellent</MenuItem>
+                  <MenuItem value="near_mint">Near Mint</MenuItem>
+                  <MenuItem value="mint">Mint</MenuItem>
+                </Select>
+              </FormControl>
+              <div className="checkbox-container">
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={isFirstEdition}
+                    onChange={(e) => setIsFirstEdition(e.target.checked)}
+                  />
+                  <span className="slider round"></span>
+                </label>
+                First Edition
+              </div>
+              <TextField
+                type="text"
+                value={extras}
+                placeholder="Extras"
+                onChange={(e) => setExtras(e.target.value)}
+                fullWidth
+                style={{ marginTop: "16px" }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleBulkAdd}>Add</Button>
+              <Button onClick={() => setShowAddPopup(false)}>Cancel</Button>
+            </DialogActions>
+          </Dialog>
           {selectedCards.map((card) => (
             <PokemonCard
               key={card.id}
               card={card}
               collection={collection}
               setCollection={setCollection}
+              selectedCardIds={selectedCardIds}
+              setSelectedCardIds={setSelectedCardIds}
             />
           ))}
         </div>
