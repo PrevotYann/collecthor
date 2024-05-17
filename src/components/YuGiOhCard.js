@@ -6,7 +6,10 @@ import { toast } from "react-toastify";
 import "../styles/YuGiOhCard.css";
 
 const aggregateQuantities = (collection) => {
-  return collection?.reduce((acc, item) => {
+  if (!Array.isArray(collection)) {
+    return [];
+  }
+  return collection.reduce((acc, item) => {
     const existing = acc.find(
       (entry) => entry.specific_id === item.specific_id
     );
@@ -100,18 +103,6 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
       setCollection(aggregateQuantities(response.data)); // Assuming you are using aggregation function
     } catch (error) {
       console.error("Failed to fetch collection:", error);
-    }
-  };
-
-  const fetchPriceData = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/items/table/${card.table_name}/item/${card.id}/ebay/prices/all`
-      );
-      setPriceData(response.data);
-    } catch (error) {
-      console.error("Failed to fetch price data:", error);
-      toast.error("Failed to fetch price data.");
     }
   };
 
@@ -224,7 +215,7 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
             className="view-prices-button"
             onClick={() => setViewPrices(!viewPrices)}
           >
-            View Prices
+            {viewPrices ? "Hide Prices" : "View Prices"}
           </button>
         </div>
         {user && showAddForm && (
@@ -270,7 +261,7 @@ const YuGiOhCard = ({ card, collection, setCollection }) => {
             <button onClick={() => setShowAddForm(false)}>Cancel</button>
           </div>
         )}
-        {viewPrices && priceData.length > 0 ? (
+        {viewPrices && priceData && priceData.length > 0 ? (
           <div className="price-details">
             {priceData.map((price) => (
               <div key={price.id} className="price-entry">

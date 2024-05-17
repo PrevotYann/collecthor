@@ -26,15 +26,19 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-
 import { toast } from "react-toastify";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 
 const cardTypeOptions = [
   { value: "cards_pokemon", label: "Pokémon" },
   { value: "cards_yugioh", label: "Yu-Gi-Oh!" },
 ];
+
+const cardTypeDisplay = {
+  cards_pokemon: "Pokémon",
+  cards_yugioh: "Yu-Gi-Oh!",
+};
 
 const languageOptions = [
   {
@@ -119,6 +123,16 @@ const languageOptions = [
   },
 ];
 
+const conditionOptions = {
+  poor: "POOR",
+  played: "PL",
+  light_played: "LP",
+  good: "GOOD",
+  excellent: "EXC",
+  near_mint: "NM",
+  mint: "MINT",
+};
+
 const UserCardsTable = () => {
   const { user } = useAuth();
   const [collection, setCollection] = useState([]);
@@ -127,6 +141,10 @@ const UserCardsTable = () => {
   const [searchName, setSearchName] = useState("");
   const [editItem, setEditItem] = useState(null);
   const [isEuroDisplayed, setIsEuroDisplayed] = useState(false);
+  const [sortConfig, setSortConfig] = useState({
+    key: "prices.median",
+    direction: "desc",
+  });
   const EURO_TO_DOLLAR_RATE = 1.07748;
 
   const fetchCollection = async () => {
@@ -195,20 +213,55 @@ const UserCardsTable = () => {
       quantity: card.user_item_details.quantity,
       condition: card.user_item_details.condition || "",
       extras: card.user_item_details.extras || "",
-      is_first_edition: card.user_item_details.is_first_edition || null,
+      is_first_edition: card.user_item_details.is_first_edition || false,
     });
   };
 
-  const filteredCollection = collection.filter(card =>
-    (sourceTableFilter === "" || card.source_table === sourceTableFilter) &&
-    (languageFilter === "" || card.language === languageFilter) &&
-    card.source_item_details.name.toLowerCase().includes(searchName.toLowerCase())
+  const filteredCollection = collection.filter(
+    (card) =>
+      (sourceTableFilter === "" || card.source_table === sourceTableFilter) &&
+      (languageFilter === "" ||
+        card.source_item_details.language === languageFilter) &&
+      card.source_item_details.name
+        .toLowerCase()
+        .includes(searchName.toLowerCase())
   );
 
+  const sortCollection = (collection, config) => {
+    if (!config.key) return collection;
+    const sorted = [...collection].sort((a, b) => {
+      let aKey = a,
+        bKey = b;
+      for (const key of config.key.split(".")) {
+        aKey = aKey[key];
+        bKey = bKey[key];
+      }
+      aKey = parseFloat(aKey) || 0;
+      bKey = parseFloat(bKey) || 0;
+      if (aKey < bKey) return config.direction === "asc" ? -1 : 1;
+      if (aKey > bKey) return config.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  };
+
+  const sortedCollection = sortCollection(filteredCollection, sortConfig);
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
   const calculateTotalPrices = (cards, isEuroDisplayed) => {
-    let totalLow = 0, totalHigh = 0, totalMedian = 0, totalMean = 0;
-  
-    cards.forEach(card => {
+    let totalLow = 0,
+      totalHigh = 0,
+      totalMedian = 0,
+      totalMean = 0;
+
+    cards.forEach((card) => {
       let factor = 1; // Default factor for DOLLAR
       if (card.prices.currency === "EURO" && !isEuroDisplayed) {
         factor = EURO_TO_DOLLAR_RATE;
@@ -221,187 +274,249 @@ const UserCardsTable = () => {
       totalMedian += parseFloat(card.prices.median || 0) * factor;
       totalMean += parseFloat(card.prices.mean || 0) * factor;
     });
-  
-    return { totalLow, totalHigh, totalMedian, totalMean };
-  };  
-  
-  const totals = calculateTotalPrices(filteredCollection, isEuroDisplayed);
 
+    return { totalLow, totalHigh, totalMedian, totalMean };
+  };
+
+  const totals = calculateTotalPrices(sortedCollection, isEuroDisplayed);
 
   return (
-    <div>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="source-table-filter-label">Source Table</InputLabel>
-        <Select
-          labelId="source-table-filter-label"
-          value={sourceTableFilter}
-          onChange={(e) => setSourceTableFilter(e.target.value)}
+    <Card>
+      <CardContent>
+        <Typography variant="h5">My Collection</Typography>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            marginBottom: 20,
+          }}
         >
-          <MenuItem value="">All</MenuItem>
-          {cardTypeOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
+          <Button
+            onClick={() => setIsEuroDisplayed(!isEuroDisplayed)}
+            variant="contained"
+            style={{ marginBottom: 10 }}
+          >
+            {isEuroDisplayed ? "Show in $" : "Show in €"}
+          </Button>
+          {["Low", "High", "Median", "Mean"].map((key) => (
+            <Card key={key} variant="outlined">
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total {key}
+                </Typography>
+                <Typography variant="h6">
+                  {isEuroDisplayed ? "€" : "$"}
+                  {totals[`total${key}`].toFixed(2)}
+                </Typography>
+              </CardContent>
+            </Card>
           ))}
-        </Select>
-      </FormControl>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="language-filter-label">Language</InputLabel>
-        <Select
-          labelId="language-filter-label"
-          value={languageFilter}
-          onChange={(e) => setLanguageFilter(e.target.value)}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 20,
+            flexDirection: "column",
+          }}
         >
-          <MenuItem value="">All</MenuItem>
-          {languageOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <TextField
-        fullWidth
-        margin="normal"
-        label="Search by Name"
-        value={searchName}
-        onChange={(e) => setSearchName(e.target.value)}
-      />
-
-      <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 20 }}>
-        <Button onClick={() => setIsEuroDisplayed(!isEuroDisplayed)} variant="contained" style={{ marginBottom: 10 }}>
-          {isEuroDisplayed ? "Show in $" : "Show in €"}
-        </Button>
-        {['Low', 'High', 'Median', 'Mean'].map((key) => (
-          <Card key={key} variant="outlined">
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Total {key} Price
-              </Typography>
-              <Typography variant="h5">
-                {(isEuroDisplayed ? '€' : '$') + totals[`total${key}`].toFixed(2)}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Button onClick={() => setIsEuroDisplayed(!isEuroDisplayed)}>
-        {isEuroDisplayed ? "Show in $" : "Show in €"}
-      </Button>
-
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Set Number</TableCell>
-              <TableCell align="right">Quantity</TableCell>
-              <TableCell align="right">Condition</TableCell>
-              <TableCell align="right">1st ed.</TableCell>
-              <TableCell align="right">Low Price</TableCell>
-              <TableCell align="right">High Price</TableCell>
-              <TableCell align="right">Median Price</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredCollection.map((card, index) => (
-              <TableRow key={index}>
-                <TableCell component="th" scope="row">
-                  {card.source_item_details.name}
+          <TextField
+            label="Search by Name"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            variant="outlined"
+          />
+          <FormControl variant="outlined">
+            <InputLabel>Filter by Type</InputLabel>
+            <Select
+              value={sourceTableFilter}
+              onChange={(e) => setSourceTableFilter(e.target.value)}
+              label="Filter by type"
+            >
+              <MenuItem value="">All</MenuItem>
+              {cardTypeOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl variant="outlined">
+            <InputLabel>Filter by Language</InputLabel>
+            <Select
+              value={languageFilter}
+              onChange={(e) => setLanguageFilter(e.target.value)}
+              label="Filter by Language"
+            >
+              <MenuItem value="">All</MenuItem>
+              {languageOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Language</TableCell>
+                <TableCell>Table</TableCell>
+                <TableCell onClick={() => handleSort("prices.low")}>
+                  Low{" "}
+                  {sortConfig.key === "prices.low" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowUpwardIcon />
+                    ) : (
+                      <ArrowDownwardIcon />
+                    ))}
                 </TableCell>
-                <TableCell align="right">
-                  {card.source_table === "cards_yugioh"
-                    ? card.source_item_details.set_number
-                    : card.source_item_details.local_id}
+                <TableCell onClick={() => handleSort("prices.high")}>
+                  High{" "}
+                  {sortConfig.key === "prices.high" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowUpwardIcon />
+                    ) : (
+                      <ArrowDownwardIcon />
+                    ))}
                 </TableCell>
-                <TableCell align="right">
-                  {card.user_item_details.quantity}
+                <TableCell onClick={() => handleSort("prices.median")}>
+                  Median{" "}
+                  {sortConfig.key === "prices.median" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowUpwardIcon />
+                    ) : (
+                      <ArrowDownwardIcon />
+                    ))}
                 </TableCell>
-                <TableCell align="right">
-                  {card.user_item_details.condition}
+                <TableCell onClick={() => handleSort("prices.mean")}>
+                  Mean{" "}
+                  {sortConfig.key === "prices.mean" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowUpwardIcon />
+                    ) : (
+                      <ArrowDownwardIcon />
+                    ))}
                 </TableCell>
-                <TableCell align="right">
-                  {card.user_item_details.is_first_edition ? (
-                    <CheckCircleIcon style={{ color: 'green' }} />
-                  ) : (
-                    <RemoveCircleOutlineIcon style={{ color: 'red' }} />
-                  )}
-                </TableCell>
-                <TableCell align="right">
-                  {card.prices.low ? card.prices.low.concat(card.prices.currency === "DOLLAR"
-                    ? "$"
-                    : card.prices.currency === "EURO"
-                    ? "€"
-                    : "") : ""}
-                </TableCell>
-                <TableCell align="right">
-                  {card.prices.high ? card.prices.high.concat(card.prices.currency === "DOLLAR"
-                    ? "$"
-                    : card.prices.currency === "EURO"
-                    ? "€"
-                    : ""): ""}
-                </TableCell>
-                <TableCell align="right">
-                  {card.prices.median ? card.prices.median.concat(card.prices.currency === "DOLLAR"
-                    ? "$"
-                    : card.prices.currency === "EURO"
-                    ? "€"
-                    : ""): ""}
-                </TableCell>
-                <TableCell align="right">
-                  <Button onClick={() => openEditDialog(card)}>Edit</Button>
-                  <Button onClick={() => handleDelete(card.user_item_id)}>
-                    Delete
-                  </Button>
-                </TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Condition</TableCell>
+                <TableCell>Extras</TableCell>
+                <TableCell>First Edition</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {editItem && (
-        <Dialog open={Boolean(editItem)} onClose={() => setEditItem(null)}>
-          <DialogTitle>Edit Item</DialogTitle>
+            </TableHead>
+            <TableBody>
+              {sortedCollection.map((card) => (
+                <TableRow key={card.user_item_id}>
+                  <TableCell>{card.source_item_details.name}</TableCell>
+                  <TableCell>
+                    {
+                      languageOptions.find(
+                        (option) =>
+                          option.value === card.source_item_details.language
+                      )?.label
+                    }
+                  </TableCell>
+                  <TableCell>{cardTypeDisplay[card.source_table]}</TableCell>
+                  <TableCell>
+                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
+                      ? (card.prices.low / EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : !isEuroDisplayed && card.prices.currency === "EURO"
+                      ? (card.prices.low * EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : card.prices.low}
+                  </TableCell>
+                  <TableCell>
+                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
+                      ? (card.prices.high / EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : !isEuroDisplayed && card.prices.currency === "EURO"
+                      ? (card.prices.high * EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : card.prices.high}
+                  </TableCell>
+                  <TableCell>
+                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
+                      ? (card.prices.median / EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : !isEuroDisplayed && card.prices.currency === "EURO"
+                      ? (card.prices.median * EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : card.prices.median}
+                  </TableCell>
+                  <TableCell>
+                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
+                      ? (card.prices.mean / EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : !isEuroDisplayed && card.prices.currency === "EURO"
+                      ? (card.prices.mean * EURO_TO_DOLLAR_RATE).toFixed(2)
+                      : card.prices.mean}
+                  </TableCell>
+                  <TableCell>{card.user_item_details.quantity}</TableCell>
+                  <TableCell>
+                    {conditionOptions[card.user_item_details.condition]}
+                  </TableCell>
+                  <TableCell>{card.user_item_details.extras}</TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={card.user_item_details.is_first_edition}
+                      disabled
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => openEditDialog(card)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleDelete(card.user_item_id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Dialog
+          open={Boolean(editItem)}
+          onClose={() => setEditItem(null)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Edit Item</DialogTitle>
           <DialogContent>
             <TextField
               margin="dense"
               label="Quantity"
               type="number"
               fullWidth
-              value={editItem.quantity}
+              value={editItem?.quantity}
               onChange={(e) =>
-                setEditItem({
-                  ...editItem,
-                  quantity: parseInt(e.target.value, 10) || 0,
-                })
+                setEditItem({ ...editItem, quantity: e.target.value })
               }
             />
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="condition-label">Condition</InputLabel>
+            <FormControl fullWidth>
+              <InputLabel>Condition</InputLabel>
               <Select
-                labelId="condition-label"
-                value={editItem.condition}
-                label="Condition"
+                value={editItem?.condition}
                 onChange={(e) =>
                   setEditItem({ ...editItem, condition: e.target.value })
                 }
               >
-                <MenuItem value="poor">Poor</MenuItem>
-                <MenuItem value="played">Played</MenuItem>
-                <MenuItem value="light_played">Light Played</MenuItem>
-                <MenuItem value="good">Good</MenuItem>
-                <MenuItem value="excellent">Excellent</MenuItem>
-                <MenuItem value="near_mint">Near Mint</MenuItem>
-                <MenuItem value="mint">Mint</MenuItem>
+                {Object.keys(conditionOptions).map((key) => (
+                  <MenuItem key={key} value={key}>
+                    {conditionOptions[key]}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <TextField
               margin="dense"
               label="Extras"
               fullWidth
-              value={editItem.extras}
+              value={editItem?.extras}
               onChange={(e) =>
                 setEditItem({ ...editItem, extras: e.target.value })
               }
@@ -409,7 +524,7 @@ const UserCardsTable = () => {
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={editItem.is_first_edition}
+                  checked={editItem?.is_first_edition}
                   onChange={(e) =>
                     setEditItem({
                       ...editItem,
@@ -418,16 +533,20 @@ const UserCardsTable = () => {
                   }
                 />
               }
-              label="Is First Edition"
+              label="First Edition"
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setEditItem(null)}>Cancel</Button>
-            <Button onClick={handleEditItem}>Save</Button>
+            <Button onClick={() => setEditItem(null)} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleEditItem} color="primary">
+              Save
+            </Button>
           </DialogActions>
         </Dialog>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

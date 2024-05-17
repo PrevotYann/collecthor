@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext"; // Ensure the import path is correct
 import { toast } from "react-toastify";
@@ -6,7 +6,10 @@ import { toast } from "react-toastify";
 import "../styles/PokemonCard.css"; // Path to CSS file
 
 const aggregateQuantities = (collection) => {
-  return collection?.reduce((acc, item) => {
+  if (!Array.isArray(collection)) {
+    return [];
+  }
+  return collection.reduce((acc, item) => {
     const existing = acc.find(
       (entry) => entry.specific_id === item.specific_id
     );
@@ -83,6 +86,8 @@ const PokemonCard = ({ card, collection, setCollection }) => {
   const [condition, setCondition] = useState("near_mint");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [extras, setExtras] = useState("");
+  const [priceData, setPriceData] = useState([]);
+  const [viewPrices, setViewPrices] = useState(false);
   const aggregatedCollection = aggregateQuantities(collection);
 
   const cardInCollection = aggregatedCollection.find(
@@ -91,6 +96,21 @@ const PokemonCard = ({ card, collection, setCollection }) => {
 
   // Fallback image URL
   const fallbackImageUrl = "/pokemon_back_card.webp";
+
+  useEffect(() => {
+    const fetchPriceData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/items/table/cards_pokemon/item/${card.id}/ebay/prices/all`
+        );
+        setPriceData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch price data:", error);
+      }
+    };
+
+    fetchPriceData();
+  }, [card.id]);
 
   const handleAddToCollection = async () => {
     // Create a copy of the new card data for optimistic update
@@ -169,6 +189,12 @@ const PokemonCard = ({ card, collection, setCollection }) => {
         <button className="price-button" onClick={() => updatePrices(card)}>
           Update Prices
         </button>
+        <button
+          className="view-prices-button"
+          onClick={() => setViewPrices(!viewPrices)}
+        >
+          {viewPrices ? "Hide Prices" : "View Prices"}
+        </button>
         {user && showAddForm && (
           <div className="add-form">
             <input
@@ -207,6 +233,21 @@ const PokemonCard = ({ card, collection, setCollection }) => {
             <button onClick={handleAddToCollection}>Submit</button>
             <button onClick={() => setShowAddForm(false)}>Cancel</button>
           </div>
+        )}
+        {viewPrices && priceData && priceData.length > 0 ? (
+          <div className="price-details">
+            {priceData.map((price) => (
+              <div key={price.id} className="price-entry">
+                <p>
+                  {price.condition} {price.is_first_edition ? "(1st)" : ""}
+                </p>
+                <p>Lowest: ${price.ebay_lowest}</p>
+                <p>Median: ${price.ebay_median}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          ""
         )}
       </div>
     </div>

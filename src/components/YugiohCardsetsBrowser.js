@@ -105,7 +105,7 @@ const YugiohCardsetsBrowser = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const cardCount = selectedCards.reduce((acc, card) => {
+  const cardCount = selectedCards?.reduce((acc, card) => {
     const inCollection = collection.find((c) => c.specific_id === card.id);
     return inCollection ? acc + 1 : acc;
   }, 0);
