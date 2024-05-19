@@ -142,6 +142,7 @@ const PorkemonCardsetsBrowser = () => {
       toast.success("Cards added to collection!");
       fetchCollection();
       setShowAddPopup(false);
+      setSelectedCardIds([]);
     } catch (error) {
       toast.error("Failed to add cards to collection.");
       console.error(error);
@@ -296,14 +297,17 @@ const PorkemonCardsetsBrowser = () => {
                 </label>
                 First Edition
               </div>
-              <TextField
-                type="text"
+              <Select
                 value={extras}
-                placeholder="Extras"
                 onChange={(e) => setExtras(e.target.value)}
+                displayEmpty
                 fullWidth
                 style={{ marginTop: "16px" }}
-              />
+              >
+                <MenuItem value="">Select extra</MenuItem>
+                <MenuItem value="Reverse">Reverse</MenuItem>
+                <MenuItem value="Holo">Holo</MenuItem>
+              </Select>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleBulkAdd}>Add</Button>

@@ -130,6 +130,7 @@ const YugiohCardsetsBrowser = () => {
       toast.success("Cards added to collection!");
       fetchCollection();
       setShowAddPopup(false);
+      setSelectedCardIds([]);
     } catch (error) {
       toast.error("Failed to add cards to collection.");
       console.error(error);
@@ -290,14 +291,14 @@ const YugiohCardsetsBrowser = () => {
                 </label>
                 First Edition
               </div>
-              <TextField
+              {/* <TextField
                 type="text"
                 value={extras}
                 placeholder="Extras"
                 onChange={(e) => setExtras(e.target.value)}
                 fullWidth
                 style={{ marginTop: "16px" }}
-              />
+              /> */}
             </DialogContent>
             <DialogActions>
               <Button onClick={handleBulkAdd}>Add</Button>

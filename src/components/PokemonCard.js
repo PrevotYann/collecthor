@@ -148,6 +148,7 @@ const PokemonCard = ({
       );
       toast.success("Card added to collection!");
       setShowAddForm(false);
+      setIsChecked(false);
     } catch (error) {
       toast.error("Failed to add card to collection.");
       console.error(error);
@@ -248,12 +249,11 @@ const PokemonCard = ({
                 onChange={(e) => setIsFirstEdition(e.target.checked)}
               />
             </label>
-            <input
-              type="text"
-              value={extras}
-              placeholder="Extras"
-              onChange={(e) => setExtras(e.target.value)}
-            />
+            <select value={extras} onChange={(e) => setExtras(e.target.value)}>
+              <option value="">Select extra</option>
+              <option value="Reverse">Reverse</option>
+              <option value="Holo">Holo</option>
+            </select>
             <button onClick={handleAddToCollection}>Submit</button>
             <button onClick={() => setShowAddForm(false)}>Cancel</button>
           </div>
