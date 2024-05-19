@@ -43,7 +43,7 @@ const updatePrices = async (card) => {
       process.env.REACT_APP_API_URL
     }/items/table/cards_pokemon/item/${
       card.id
-    }/condition/${condition}/first/${true}/ebay/price`;
+    }/condition/${condition}/first/${true}/extras/${null}/ebay/price`;
     const response = await axios.post(url);
     try {
       if (response.data) {
@@ -62,7 +62,7 @@ const updatePrices = async (card) => {
       process.env.REACT_APP_API_URL
     }/items/table/cards_pokemon/item/${
       card.id
-    }/condition/${condition}/first/${false}/ebay/price`;
+    }/condition/${condition}/first/${false}/extras/${null}/ebay/price`;
     const response2 = await axios.post(url2);
     try {
       if (response2.data) {
