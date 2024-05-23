@@ -67,7 +67,7 @@ const updatePrices = async (card) => {
     try {
       if (response2.data) {
         toast.success(
-          `Price updated (${condition} | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+          `Price updated (${condition} | Median: ${response2.data.median}, High: ${response2.data.high}, Low: ${response2.data.low}`
         );
       } else {
         toast.info("No new pricing information available.");
@@ -206,20 +206,22 @@ const PokemonCard = ({
         <p>
           <strong>Set number:</strong> {card.local_id}
         </p>
-        {user && !showAddForm && (
-          <button className="add-button" onClick={() => setShowAddForm(true)}>
-            Add to Collection
+        <div style={{ display: "flex", gap: "16px" }}>
+          {user && !showAddForm && (
+            <button className="add-button" onClick={() => setShowAddForm(true)}>
+              Add to Collection
+            </button>
+          )}
+          <button className="price-button" onClick={() => updatePrices(card)}>
+            Update Prices
           </button>
-        )}
-        <button className="price-button" onClick={() => updatePrices(card)}>
-          Update Prices
-        </button>
-        <button
-          className="view-prices-button"
-          onClick={() => setViewPrices(!viewPrices)}
-        >
-          {viewPrices ? "Hide Prices" : "View Prices"}
-        </button>
+          <button
+            className="view-prices-button"
+            onClick={() => setViewPrices(!viewPrices)}
+          >
+            {viewPrices ? "Hide Prices" : "View Prices"}
+          </button>
+        </div>
         {user && showAddForm && (
           <div className="add-form">
             <input
