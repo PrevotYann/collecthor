@@ -25,6 +25,7 @@ import {
   DialogTitle,
   FormControlLabel,
   Checkbox,
+  Pagination,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
@@ -145,14 +146,22 @@ const UserCardsTable = () => {
     key: "prices.median",
     direction: "desc",
   });
-  const EURO_TO_DOLLAR_RATE = 1.07748;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const EURO_TO_DOLLAR_RATE = 1.09671;
 
-  const fetchCollection = async () => {
+  const fetchCollection = async (page = 1, size = 20) => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
+        `${process.env.REACT_APP_API_URL}/items/user/v2/${user.username}`,
+        {
+          params: {
+            page,
+            size,
+          },
+        }
       );
-      setCollection(response.data || []);
+      setCollection(response.data.items || []);
     } catch (error) {
       console.error("Failed to fetch collection:", error);
     }
@@ -160,10 +169,10 @@ const UserCardsTable = () => {
 
   useEffect(() => {
     if (user && user.username) {
-      fetchCollection();
+      fetchCollection(currentPage, pageSize);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, currentPage, pageSize]);
 
   const handleEditItem = async () => {
     try {
@@ -182,7 +191,7 @@ const UserCardsTable = () => {
         }
       );
       setEditItem(null);
-      fetchCollection();
+      fetchCollection(currentPage, pageSize);
       toast.success("Edit successful.");
       console.log("Edit successful", response.data);
     } catch (error) {
@@ -199,7 +208,7 @@ const UserCardsTable = () => {
       await axios.delete(
         `${process.env.REACT_APP_API_URL}/items/${userItemId}/user/${user.username}/delete`
       );
-      fetchCollection(); // Refresh the list
+      fetchCollection(currentPage, pageSize); // Refresh the list
       toast.success("Deleted successfully.");
     } catch (error) {
       console.error("Failed to delete item:", error);
@@ -281,6 +290,10 @@ const UserCardsTable = () => {
 
   const totals = calculateTotalPrices(sortedCollection, isEuroDisplayed);
 
+  const handlePageChange = (event, newPage) => {
+    setCurrentPage(newPage);
+  };
+
   return (
     <Card>
       <CardContent>
@@ -318,21 +331,22 @@ const UserCardsTable = () => {
             display: "flex",
             justifyContent: "space-between",
             marginBottom: 20,
-            flexDirection: "column",
+            flexWrap: "wrap",
           }}
         >
           <TextField
             label="Search by Name"
+            variant="outlined"
             value={searchName}
             onChange={(e) => setSearchName(e.target.value)}
-            variant="outlined"
+            style={{ width: "200px", marginRight: "16px" }}
           />
-          <FormControl variant="outlined">
+          <FormControl variant="outlined" style={{ marginRight: "16px" }}>
             <InputLabel>Filter by Type</InputLabel>
             <Select
               value={sourceTableFilter}
               onChange={(e) => setSourceTableFilter(e.target.value)}
-              label="Filter by type"
+              label="Filter by Type"
             >
               <MenuItem value="">All</MenuItem>
               {cardTypeOptions.map((option) => (
@@ -365,47 +379,54 @@ const UserCardsTable = () => {
                 <TableCell>Name</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>Language</TableCell>
-                <TableCell>Number</TableCell>
-                <TableCell>Rarity</TableCell>
-                <TableCell onClick={() => handleSort("prices.low")}>
+                <TableCell
+                  onClick={() => handleSort("prices.low")}
+                  style={{ cursor: "pointer" }}
+                >
                   Low{" "}
                   {sortConfig.key === "prices.low" &&
                     (sortConfig.direction === "asc" ? (
-                      <ArrowUpwardIcon />
-                    ) : (
                       <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
                     ))}
                 </TableCell>
-                <TableCell onClick={() => handleSort("prices.high")}>
+                <TableCell
+                  onClick={() => handleSort("prices.high")}
+                  style={{ cursor: "pointer" }}
+                >
                   High{" "}
                   {sortConfig.key === "prices.high" &&
                     (sortConfig.direction === "asc" ? (
-                      <ArrowUpwardIcon />
-                    ) : (
                       <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
                     ))}
                 </TableCell>
-                <TableCell onClick={() => handleSort("prices.median")}>
+                <TableCell
+                  onClick={() => handleSort("prices.median")}
+                  style={{ cursor: "pointer" }}
+                >
                   Median{" "}
                   {sortConfig.key === "prices.median" &&
                     (sortConfig.direction === "asc" ? (
-                      <ArrowUpwardIcon />
-                    ) : (
                       <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
                     ))}
                 </TableCell>
-                <TableCell onClick={() => handleSort("prices.mean")}>
+                <TableCell
+                  onClick={() => handleSort("prices.mean")}
+                  style={{ cursor: "pointer" }}
+                >
                   Mean{" "}
                   {sortConfig.key === "prices.mean" &&
                     (sortConfig.direction === "asc" ? (
-                      <ArrowUpwardIcon />
-                    ) : (
                       <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
                     ))}
                 </TableCell>
-                <TableCell>Qty</TableCell>
-                <TableCell>Condition</TableCell>
-                <TableCell>1st Ed.</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -414,73 +435,42 @@ const UserCardsTable = () => {
                 <TableRow key={card.user_item_id}>
                   <TableCell>{card.source_item_details.name}</TableCell>
                   <TableCell>{cardTypeDisplay[card.source_table]}</TableCell>
+                  <TableCell>{card.source_item_details.language}</TableCell>
                   <TableCell>
-                    {
-                      languageOptions.find(
-                        (option) =>
-                          option.value === card.source_item_details.language
-                      )?.label
-                    }
+                    {isEuroDisplayed
+                      ? "€" +
+                        (
+                          parseFloat(card.prices.low) * EURO_TO_DOLLAR_RATE
+                        ).toFixed(2)
+                      : "$" + parseFloat(card.prices.low).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    {card.source_table === "cards_pokemon"
-                      ? card.source_item_details.local_id
-                      : card.source_table === "cards_yugioh"
-                      ? card.source_item_details.set_number
-                      : ""}
-                  </TableCell>
-                  <TableCell>{card.source_item_details.rarity}</TableCell>
-                  <TableCell>
-                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
-                      ? (card.prices.low / EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : !isEuroDisplayed && card.prices.currency === "EURO"
-                      ? (card.prices.low * EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : card.prices.low}
+                    {isEuroDisplayed
+                      ? "€" +
+                        (
+                          parseFloat(card.prices.high) * EURO_TO_DOLLAR_RATE
+                        ).toFixed(2)
+                      : "$" + parseFloat(card.prices.high).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
-                      ? (card.prices.high / EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : !isEuroDisplayed && card.prices.currency === "EURO"
-                      ? (card.prices.high * EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : card.prices.high}
+                    {isEuroDisplayed
+                      ? "€" +
+                        (
+                          parseFloat(card.prices.median) * EURO_TO_DOLLAR_RATE
+                        ).toFixed(2)
+                      : "$" + parseFloat(card.prices.median).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
-                      ? (card.prices.median / EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : !isEuroDisplayed && card.prices.currency === "EURO"
-                      ? (card.prices.median * EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : card.prices.median}
+                    {isEuroDisplayed
+                      ? "€" +
+                        (
+                          parseFloat(card.prices.mean) * EURO_TO_DOLLAR_RATE
+                        ).toFixed(2)
+                      : "$" + parseFloat(card.prices.mean).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    {isEuroDisplayed && card.prices.currency === "DOLLAR"
-                      ? (card.prices.mean / EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : !isEuroDisplayed && card.prices.currency === "EURO"
-                      ? (card.prices.mean * EURO_TO_DOLLAR_RATE).toFixed(2)
-                      : card.prices.mean}
-                  </TableCell>
-                  <TableCell>{card.user_item_details.quantity}</TableCell>
-                  <TableCell>
-                    {conditionOptions[card.user_item_details.condition]}
-                  </TableCell>
-                  <TableCell>
-                    <Checkbox
-                      checked={card.user_item_details.is_first_edition}
-                      disabled
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => openEditDialog(card)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => handleDelete(card.user_item_id)}
-                    >
+                    <Button onClick={() => openEditDialog(card)}>Edit</Button>
+                    <Button onClick={() => handleDelete(card.user_item_id)}>
                       Delete
                     </Button>
                   </TableCell>
@@ -489,66 +479,80 @@ const UserCardsTable = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <Dialog
-          open={Boolean(editItem)}
-          onClose={() => setEditItem(null)}
-          aria-labelledby="form-dialog-title"
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
         >
-          <DialogTitle id="form-dialog-title">Edit Item</DialogTitle>
+          <Pagination
+            count={Math.ceil(collection.totalCount / pageSize)}
+            page={currentPage}
+            onChange={handlePageChange}
+            variant="outlined"
+            shape="rounded"
+          />
+        </div>
+        <Dialog open={!!editItem} onClose={() => setEditItem(null)}>
+          <DialogTitle>Edit Item</DialogTitle>
           <DialogContent>
-            <TextField
-              margin="dense"
-              label="Quantity"
-              type="number"
-              fullWidth
-              value={editItem?.quantity}
-              onChange={(e) =>
-                setEditItem({ ...editItem, quantity: e.target.value })
-              }
-            />
-            <FormControl fullWidth>
-              <InputLabel>Condition</InputLabel>
-              <Select
-                value={editItem?.condition}
-                onChange={(e) =>
-                  setEditItem({ ...editItem, condition: e.target.value })
-                }
-              >
-                {Object.keys(conditionOptions).map((key) => (
-                  <MenuItem key={key} value={key}>
-                    {conditionOptions[key]}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              margin="dense"
-              label="Extras"
-              fullWidth
-              value={editItem?.extras}
-              onChange={(e) =>
-                setEditItem({ ...editItem, extras: e.target.value })
-              }
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={editItem?.is_first_edition}
+            {editItem && (
+              <>
+                <TextField
+                  label="Quantity"
+                  type="number"
+                  value={editItem.quantity}
                   onChange={(e) =>
-                    setEditItem({
-                      ...editItem,
-                      is_first_edition: e.target.checked,
-                    })
+                    setEditItem({ ...editItem, quantity: e.target.value })
                   }
+                  fullWidth
+                  margin="normal"
                 />
-              }
-              label="First Edition"
-            />
+                <FormControl variant="outlined" fullWidth margin="normal">
+                  <InputLabel>Condition</InputLabel>
+                  <Select
+                    value={editItem.condition}
+                    onChange={(e) =>
+                      setEditItem({ ...editItem, condition: e.target.value })
+                    }
+                    label="Condition"
+                  >
+                    {Object.keys(conditionOptions).map((key) => (
+                      <MenuItem key={key} value={key}>
+                        {conditionOptions[key]}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Extras"
+                  value={editItem.extras}
+                  onChange={(e) =>
+                    setEditItem({ ...editItem, extras: e.target.value })
+                  }
+                  fullWidth
+                  margin="normal"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={editItem.is_first_edition}
+                      onChange={(e) =>
+                        setEditItem({
+                          ...editItem,
+                          is_first_edition: e.target.checked,
+                        })
+                      }
+                    />
+                  }
+                  label="First Edition"
+                />
+              </>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setEditItem(null)} color="primary">
-              Cancel
-            </Button>
+            <Button onClick={() => setEditItem(null)}>Cancel</Button>
             <Button onClick={handleEditItem} color="primary">
               Save
             </Button>
