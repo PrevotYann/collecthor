@@ -43,12 +43,12 @@ const updatePrices = async (card) => {
       process.env.REACT_APP_API_URL
     }/items/table/cards_yugioh/item/${
       card.id
-    }/condition/${condition}/first/${true}/extras/${null}/ebay/price`;
+    }/condition/${condition}/first/${true}/extras/${null}/ebay/sold_prices`;
     const response = await axios.post(url);
     try {
       if (response.data) {
         toast.success(
-          `Price updated (${condition} 1st | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+          `Price updated (${condition} 1st | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
         );
       } else {
         toast.info("No new pricing information available.");
@@ -62,12 +62,12 @@ const updatePrices = async (card) => {
       process.env.REACT_APP_API_URL
     }/items/table/cards_yugioh/item/${
       card.id
-    }/condition/${condition}/first/${false}/extras/${null}/ebay/price`;
+    }/condition/${condition}/first/${false}/extras/${null}/ebay/sold_prices`;
     const response2 = await axios.post(url2);
     try {
       if (response2.data) {
         toast.success(
-          `Price updated (${condition} | Median: ${response.data.median}, High: ${response.data.high}, Low: ${response.data.low}`
+          `Price updated (${condition} | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
         );
       } else {
         toast.info("No new pricing information available.");
