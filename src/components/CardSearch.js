@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Select from "react-select";
 import ReactCountryFlag from "react-country-flag";
@@ -108,22 +108,23 @@ const CardSearchComponent = () => {
   const [showImages, setShowImages] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [collection, setCollection] = useState(false);
-    const fetchCollection = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
-        );
-        setCollection(response.data || []);
-      } catch (error) {
-        console.error("Failed to fetch collection:", error);
-      }
-    };
+
+  const fetchCollection = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
+      );
+      setCollection(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch collection:", error);
+    }
+  }, [user?.username]);
 
   useEffect(() => {
-    if (user && user.username) {
+    if (user?.username) {
       fetchCollection();
     }
-  }, [user]);
+  }, [user, fetchCollection]);
 
   useEffect(() => {
     const filteredCards = cards.filter(
