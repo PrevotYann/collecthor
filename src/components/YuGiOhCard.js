@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
@@ -38,43 +38,32 @@ const updatePrices = async (card) => {
     "near_mint",
     "mint",
   ];
-  for (let condition of conditions) {
-    const url = `${
-      process.env.REACT_APP_API_URL
-    }/items/table/cards_yugioh/item/${
-      card.id
-    }/condition/${condition}/first/${true}/extras/${null}/ebay/sold_prices`;
-    const response = await axios.post(url);
-    try {
-      if (response.data) {
-        toast.success(
-          `Price updated (${condition} 1st | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
-        );
-      } else {
-        toast.info("No new pricing information available.");
-      }
-    } catch (error) {
-      toast.error("Failed to update price.");
-      console.error("Price update error:", error);
-    }
 
-    const url2 = `${
-      process.env.REACT_APP_API_URL
-    }/items/table/cards_yugioh/item/${
-      card.id
-    }/condition/${condition}/first/${false}/extras/${null}/ebay/sold_prices`;
-    const response2 = await axios.post(url2);
-    try {
-      if (response2.data) {
-        toast.success(
-          `Price updated (${condition} | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
-        );
-      } else {
-        toast.info("No new pricing information available.");
+  for (let condition of conditions) {
+    for (let firstEdition of [true, false]) {
+      const url = `${
+        process.env.REACT_APP_API_URL
+      }/items/table/cards_yugioh/item/${
+        card.id
+      }/condition/${condition}/first/${firstEdition}/extras/${null}/ebay/sold_prices`;
+
+      try {
+        const response = await axios.post(url);
+        if (response.data) {
+          toast.success(
+            `Price updated (${condition} ${
+              firstEdition ? "1st" : ""
+            } | Median: ${response.data.median_price}, High: ${
+              response.data.highest_price
+            }, Low: ${response.data.lowest_price})`
+          );
+        } else {
+          toast.info(`No new pricing information for ${condition}.`);
+        }
+      } catch (error) {
+        toast.error(`Failed to update price for ${condition}.`);
+        console.error("Price update error:", error);
       }
-    } catch (error) {
-      toast.error("Failed to update price.");
-      console.error("Price update error:", error);
     }
   }
 };
@@ -86,7 +75,8 @@ const YuGiOhCard = ({
   selectedCardIds,
   setSelectedCardIds,
 }) => {
-  const [imageUrl, setImageUrl] = useState(null);
+  const { user } = useAuth();
+  const [imageUrl, setImageUrl] = useState("/yugioh_back_card.webp");
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState("near_mint");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
@@ -94,66 +84,60 @@ const YuGiOhCard = ({
   const [showAddForm, setShowAddForm] = useState(false);
   const [priceData, setPriceData] = useState([]);
   const [viewPrices, setViewPrices] = useState(false);
+  const [loadingPrices, setLoadingPrices] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const { user } = useAuth();
-  const aggregatedCollection = aggregateQuantities(collection);
 
+  const aggregatedCollection = aggregateQuantities(collection);
   const cardInCollection = aggregatedCollection.find(
     (item) => item.specific_id === card.id
   );
 
-  const fetchCollection = async () => {
+  const fetchImageUrl = async () => {
+    if (!card.images) return;
+    const images = JSON.parse(card.images);
+    const apiURL = process.env.REACT_APP_MEDIAWIKI_API_URL;
+
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/items/user/${user.username}`
+      const response = await fetch(
+        `${apiURL}?action=query&format=json&prop=imageinfo&titles=File:${encodeURIComponent(
+          images[0]
+        )}&iiprop=url`
       );
-      setCollection(aggregateQuantities(response.data)); // Assuming you are using aggregation function
+      const data = await response.json();
+      const page = data.query.pages[Object.keys(data.query.pages)[0]];
+      setImageUrl(
+        page.imageinfo ? page.imageinfo[0].url : "/yugioh_back_card.webp"
+      );
     } catch (error) {
-      console.error("Failed to fetch collection:", error);
+      console.error("Failed to fetch image URL:", error);
     }
   };
 
   useEffect(() => {
-    const fetchImageUrl = async () => {
-      if (!card.images) return setImageUrl("/yugioh_back_card.webp");
-
-      const images = JSON.parse(card.images);
-      const apiURL = process.env.REACT_APP_MEDIAWIKI_API_URL;
-      try {
-        const response = await fetch(
-          `${apiURL}?action=query&format=json&prop=imageinfo&titles=File:${encodeURIComponent(
-            images[0]
-          )}&iiprop=url`,
-          { method: "GET" }
-        );
-        const data = await response.json();
-        const page = data.query.pages[Object.keys(data.query.pages)[0]];
-        setImageUrl(
-          page.imageinfo ? page.imageinfo[0].url : "/yugioh_back_card.webp"
-        );
-      } catch (error) {
-        console.error("Failed to fetch image URL:", error);
-        setImageUrl("/yugioh_back_card.webp");
-      }
-    };
-
     fetchImageUrl();
   }, [card.images]);
 
-  useEffect(() => {
-    const fetchPriceData = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/items/table/cards_yugioh/item/${card.id}/ebay/prices/all`
-        );
-        setPriceData(response.data);
-      } catch (error) {
-        console.error("Failed to fetch price data:", error);
-      }
-    };
+  const fetchPriceData = async () => {
+    setLoadingPrices(true);
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/table/cards_yugioh/item/${card.id}/ebay/prices/all`
+      );
+      setPriceData(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch price data.");
+      console.error("Fetch price data error:", error);
+    } finally {
+      setLoadingPrices(false);
+    }
+  };
 
-    fetchPriceData();
-  }, [card.id]);
+  const toggleViewPrices = () => {
+    if (!viewPrices) {
+      fetchPriceData();
+    }
+    setViewPrices(!viewPrices);
+  };
 
   const handleAddToCollection = async () => {
     const newCard = {
@@ -161,26 +145,32 @@ const YuGiOhCard = ({
       user_item_details: {
         quantity,
         condition,
+        extras,
         is_first_edition: isFirstEdition,
       },
+      source_item_details: { ...card },
     };
 
     // Optimistically update the UI
-    const newCollection = [...collection, newCard];
-    setCollection(aggregateQuantities(newCollection));
+    const updatedCollection = [...collection, newCard];
+    setCollection(aggregateQuantities(updatedCollection));
 
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/items/table/cards_yugioh/item/${card.id}/user/${user.username}`,
-        { quantity, condition, extras, is_first_edition: isFirstEdition }
+        {
+          quantity,
+          condition,
+          extras,
+          is_first_edition: isFirstEdition,
+        }
       );
       toast.success("Card added to collection!");
       setShowAddForm(false);
+      setIsChecked(false);
     } catch (error) {
       toast.error("Failed to add card to collection.");
       console.error(error);
-      // Revert to original collection if the update fails
-      fetchCollection();
     }
   };
 
@@ -201,7 +191,6 @@ const YuGiOhCard = ({
     >
       <div className="select-checkbox">
         <input
-          style={{ marginRight: "1rem" }}
           type="checkbox"
           checked={isChecked}
           onChange={handleCheckboxChange}
@@ -226,7 +215,7 @@ const YuGiOhCard = ({
         <p>
           <strong>Rarity:</strong> {card.rarity}
         </p>
-        <div style={{ display: "flex", gap: "16px" }}>
+        <div className="button-container">
           {user && !showAddForm && (
             <button className="add-button" onClick={() => setShowAddForm(true)}>
               Add to Collection
@@ -237,19 +226,23 @@ const YuGiOhCard = ({
           </button>
           <button
             className="view-prices-button"
-            onClick={() => setViewPrices(!viewPrices)}
+            onClick={toggleViewPrices}
+            disabled={loadingPrices}
           >
-            {viewPrices ? "Hide Prices" : "View Prices"}
+            {loadingPrices
+              ? "Loading..."
+              : viewPrices
+              ? "Hide Prices"
+              : "View Prices"}
           </button>
         </div>
-        {user && showAddForm && (
+        {showAddForm && (
           <div className="add-form">
             <input
               type="number"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               min="1"
-              placeholder="Quantity"
             />
             <select
               value={condition}
@@ -264,28 +257,25 @@ const YuGiOhCard = ({
               <option value="near_mint">Near Mint</option>
               <option value="mint">Mint</option>
             </select>
-            <div className="checkbox-container">
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={isFirstEdition}
-                  onChange={(e) => setIsFirstEdition(e.target.checked)}
-                />
-                <span className="slider round"></span>
-              </label>
+            <label>
               First Edition
-            </div>
+              <input
+                type="checkbox"
+                checked={isFirstEdition}
+                onChange={(e) => setIsFirstEdition(e.target.checked)}
+              />
+            </label>
             <input
               type="text"
-              value={extras}
               placeholder="Extras"
+              value={extras}
               onChange={(e) => setExtras(e.target.value)}
             />
-            <button onClick={handleAddToCollection}>Add</button>
+            <button onClick={handleAddToCollection}>Submit</button>
             <button onClick={() => setShowAddForm(false)}>Cancel</button>
           </div>
         )}
-        {viewPrices && priceData && priceData.length > 0 ? (
+        {viewPrices && priceData.length > 0 && (
           <div className="price-details">
             {priceData.map((price) => (
               <div key={price.id} className="price-entry">
@@ -297,8 +287,6 @@ const YuGiOhCard = ({
               </div>
             ))}
           </div>
-        ) : (
-          ""
         )}
       </div>
     </div>

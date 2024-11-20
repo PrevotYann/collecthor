@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext"; // Ensure the import path is correct
 import { toast } from "react-toastify";
@@ -38,43 +38,32 @@ const updatePrices = async (card) => {
     "near_mint",
     "mint",
   ];
-  for (let condition of conditions) {
-    const url = `${
-      process.env.REACT_APP_API_URL
-    }/items/table/cards_pokemon/item/${
-      card.id
-    }/condition/${condition}/first/${true}/extras/${null}/ebay/sold_prices`;
-    const response = await axios.post(url);
-    try {
-      if (response.data) {
-        toast.success(
-          `Price updated (${condition} 1st | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
-        );
-      } else {
-        toast.info("No new pricing information available.");
-      }
-    } catch (error) {
-      toast.error("Failed to update price.");
-      console.error("Price update error:", error);
-    }
 
-    const url2 = `${
-      process.env.REACT_APP_API_URL
-    }/items/table/cards_pokemon/item/${
-      card.id
-    }/condition/${condition}/first/${false}/extras/${null}/ebay/sold_prices`;
-    const response2 = await axios.post(url2);
-    try {
-      if (response2.data) {
-        toast.success(
-          `Price updated (${condition} | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
-        );
-      } else {
-        toast.info("No new pricing information available.");
+  for (let condition of conditions) {
+    for (let firstEdition of [true, false]) {
+      const url = `${
+        process.env.REACT_APP_API_URL
+      }/items/table/cards_pokemon/item/${
+        card.id
+      }/condition/${condition}/first/${firstEdition}/extras/${null}/ebay/sold_prices`;
+
+      try {
+        const response = await axios.post(url);
+        if (response.data) {
+          toast.success(
+            `Price updated (${condition} ${
+              firstEdition ? "1st" : ""
+            } | Median: ${response.data.median_price}, High: ${
+              response.data.highest_price
+            }, Low: ${response.data.lowest_price})`
+          );
+        } else {
+          toast.info(`No new pricing information for ${condition}.`);
+        }
+      } catch (error) {
+        toast.error(`Failed to update price for ${condition}.`);
+        console.error("Price update error:", error);
       }
-    } catch (error) {
-      toast.error("Failed to update price.");
-      console.error("Price update error:", error);
     }
   }
 };
@@ -94,33 +83,40 @@ const PokemonCard = ({
   const [extras, setExtras] = useState("");
   const [priceData, setPriceData] = useState([]);
   const [viewPrices, setViewPrices] = useState(false);
+  const [loadingPrices, setLoadingPrices] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+
   const aggregatedCollection = aggregateQuantities(collection);
 
   const cardInCollection = aggregatedCollection.find(
     (item) => item.specific_id === card.id
   );
 
-  // Fallback image URL
   const fallbackImageUrl = "/pokemon_back_card.webp";
 
-  useEffect(() => {
-    const fetchPriceData = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/items/table/cards_pokemon/item/${card.id}/ebay/prices/all`
-        );
-        setPriceData(response.data);
-      } catch (error) {
-        console.error("Failed to fetch price data:", error);
-      }
-    };
+  const fetchPriceData = async () => {
+    setLoadingPrices(true);
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/table/cards_pokemon/item/${card.id}/ebay/prices/all`
+      );
+      setPriceData(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch price data.");
+      console.error("Fetch price data error:", error);
+    } finally {
+      setLoadingPrices(false);
+    }
+  };
 
-    fetchPriceData();
-  }, [card.id]);
+  const toggleViewPrices = () => {
+    if (!viewPrices) {
+      fetchPriceData();
+    }
+    setViewPrices(!viewPrices);
+  };
 
   const handleAddToCollection = async () => {
-    // Create a copy of the new card data for optimistic update
     const newCardData = {
       specific_id: card.id,
       user_item_details: {
@@ -129,10 +125,9 @@ const PokemonCard = ({
         extras,
         is_first_edition: isFirstEdition,
       },
-      source_item_details: { ...card }, // Assuming the card object has source details
+      source_item_details: { ...card },
     };
 
-    // Optimistically update the collection in the UI
     const optimisticCollection = [...collection, newCardData];
     setCollection(aggregateQuantities(optimisticCollection));
 
@@ -152,7 +147,6 @@ const PokemonCard = ({
     } catch (error) {
       toast.error("Failed to add card to collection.");
       console.error(error);
-      // Revert the collection to its previous state if the API call fails
       setCollection(aggregateQuantities(collection));
     }
   };
@@ -183,7 +177,7 @@ const PokemonCard = ({
       <div className="pokemon-card-image">
         <img
           src={
-            card.image !== null
+            card.image
               ? card.image + process.env.REACT_APP_POKEMON_IMAGE_SUFFIX
               : fallbackImageUrl
           }
@@ -217,9 +211,14 @@ const PokemonCard = ({
           </button>
           <button
             className="view-prices-button"
-            onClick={() => setViewPrices(!viewPrices)}
+            onClick={toggleViewPrices}
+            disabled={loadingPrices}
           >
-            {viewPrices ? "Hide Prices" : "View Prices"}
+            {loadingPrices
+              ? "Loading..."
+              : viewPrices
+              ? "Hide Prices"
+              : "View Prices"}
           </button>
         </div>
         {user && showAddForm && (
