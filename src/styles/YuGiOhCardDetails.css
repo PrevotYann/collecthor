@@ -1,0 +1,29 @@
+.card-details {
+    display: flex;
+    padding: 2rem;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+  
+  .card-image img {
+    width: 300px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .card-info {
+    flex: 1;
+    font-size: 1.1rem;
+  }
+  
+  .card-info h1 {
+    margin-bottom: 1rem;
+    font-size: 2rem;
+  }
+  
+  .card-info p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+  

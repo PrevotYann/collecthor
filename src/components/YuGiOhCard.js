@@ -115,6 +115,7 @@ const YuGiOhCard = ({
 
   useEffect(() => {
     fetchImageUrl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card.images]);
 
   const fetchPriceData = async () => {

@@ -147,7 +147,7 @@ const UserCardsTable = () => {
     direction: "desc",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const pageSize = 20;
   const EURO_TO_DOLLAR_RATE = 1.09671;
 
   const fetchCollection = async (page = 1, size = 20) => {

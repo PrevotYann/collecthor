@@ -34,13 +34,13 @@ const YugiohCardsetsBrowser = () => {
   const [selectedCardIds, setSelectedCardIds] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState("near_mint");
-  const [extras, setExtras] = useState("");
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [cardsetName, setCardsetName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [cardsPerPage] = useState(10);
   const [showCardsets, setShowCardsets] = useState(true);
+  const extras = "";
 
   const toggleCardsetsVisibility = () => {
     setShowCardsets(!showCardsets);

@@ -1,0 +1,130 @@
+/* General Carousel Container */
+.carousel-container {
+    position: relative;
+    width: 100%;
+    margin: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .carousel-wrapper {
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .carousel-slides {
+    display: grid;
+    transition: transform 0.5s ease-in-out;
+    grid-template-columns: repeat(6, 1fr); /* Default 6 cards per row */
+    width: 100%;
+  }
+  
+  .carousel-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    box-sizing: border-box;
+    height: 100%;
+  }
+
+  .carousel-card:hover {
+    cursor: pointer;
+  }
+  
+  .carousel-image {
+    width: 100%;
+    height: auto;
+    max-height: 350px; /* Fixed image height */
+    object-fit: contain; /* Ensure images fit within their container without being cropped */
+    margin-bottom: 10px;
+  }
+  
+  .carousel-title {
+    margin-top: 5px;
+    font-size: 0.9em;
+    line-height: 1.2em;
+    height: 2.4em; /* Two lines of text */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Arrows for navigation */
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .carousel-arrow.left {
+    left: 10px;
+  }
+  
+  .carousel-arrow.right {
+    right: 10px;
+  }
+  
+  /* Dots for pagination */
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+    margin: 0 5px;
+    border-radius: 50%;
+    background-color: #bbb;
+    cursor: pointer;
+  }
+  
+  .dot.active {
+    background-color: #717171;
+  }
+  
+/* Media Queries for Responsiveness */
+@media screen and (max-width: 1200px) {
+    .carousel-slides {
+      grid-template-columns: repeat(5, 1fr); /* 5 cards for screens smaller than 1200px */
+    }
+  }
+  
+@media screen and (max-width: 992px) {
+    .carousel-slides {
+      grid-template-columns: repeat(4, 1fr); /* 4 cards for screens smaller than 992px */
+    }
+  }
+  
+@media screen and (max-width: 768px) {
+    .carousel-slides {
+      grid-template-columns: repeat(3, 1fr); /* 3 cards for screens smaller than 768px */
+    }
+}
+  
+@media screen and (max-width: 576px) {
+    .carousel-slides {
+      grid-template-columns: repeat(2, 1fr); /* 2 cards for screens smaller than 576px */
+    }
+}
+  
+@media screen and (max-width: 480px) {
+    .carousel-slides {
+      grid-template-columns: 1fr; /* 1 card for very small screens */
+    }
+}

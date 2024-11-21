@@ -8,6 +8,15 @@ body {
   font-family: Arial, sans-serif; /* Default font */
 }
 
+ruby {
+  font-size: 1em;
+  line-height: 1.2;
+}
+
+rt {
+  font-size: 0.6em;
+  color: gray;
+}
 
 /* Main content specific styles */
 .main-content {
