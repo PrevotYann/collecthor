@@ -1,0 +1,161 @@
+.fftcg-card-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Ensures no overflow issues */
+}
+
+.select-checkbox {
+  align-self: flex-end;
+}
+
+.fftcg-card-container.in-collection {
+  background-color: #ccfcff; /* Light green/blue color */
+  border: 1px solid #b2d3f2; /* Slightly darker border for better visibility */
+}
+
+.fftcg-card-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.fftcg-card-image img {
+  max-width: 100%;
+  max-height: 300px; /* Ensure the image doesn't take up too much space */
+  border-radius: 8px;
+}
+
+.quantity-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.fftcg-card-details {
+  text-align: center;
+}
+
+.fftcg-card-details h2 {
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.fftcg-card-details p {
+  margin: 4px 0;
+  color: #666;
+}
+
+.fftcg-card-details div {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.add-button,
+.price-button,
+.view-prices-button {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-button:hover,
+.price-button:hover,
+.view-prices-button:hover {
+  background-color: #0056b3;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.add-form input[type="number"],
+.add-form select,
+.add-form label {
+  padding: 8px;
+  font-size: 0.9rem;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.add-form button {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: #fff;
+  background-color: #28a745;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-form button:hover {
+  background-color: #218838;
+}
+
+.price-details {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.price-entry {
+  border-top: 1px solid #ddd;
+  padding: 8px 0;
+}
+
+.price-entry p {
+  margin: 4px 0;
+}
+
+@media (min-width: 768px) {
+  .fftcg-card-container {
+    flex-direction: row;
+    padding: 24px;
+  }
+
+  .select-checkbox {
+    align-self: flex-start;
+  }
+
+  .fftcg-card-image {
+    margin-bottom: 0;
+    margin-right: 24px;
+    flex-shrink: 1;
+    width: 220px; /* Fixed width for larger screens */
+  }
+
+  .fftcg-card-details {
+    text-align: left;
+    flex: 1; /* Allow details to take the remaining space */
+  }
+
+  .fftcg-card-details div {
+    justify-content: flex-start;
+  }
+}

@@ -17,6 +17,8 @@ import CardsSearchPage from "./pages/CardsSearchPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import User from "./pages/User";
+import FFTCGCards from "./pages/FFTCGCards";
+import FFTCGCardDetails from "./components/FFTCGCardDetails";
 
 const App = () => {
   return (
@@ -28,6 +30,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/cards" element={<CardsSearchPage />} />
             <Route path="/cards/pokemon" element={<PokemonCards />} />
+            <Route path="/cards/fftcg" element={<FFTCGCards />} />
             <Route path="/cards/yugioh" element={<YuGiOhCards />} />
             <Route
               path="/yugioh/card-details"
@@ -37,6 +40,7 @@ const App = () => {
               path="/pokemon/card-details"
               element={<PokemonCardDetails />}
             />
+            <Route path="/fftcg/card-details" element={<FFTCGCardDetails />} />
             <Route path="/user" element={<User />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

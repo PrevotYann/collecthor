@@ -8,10 +8,12 @@ import { useAuth } from "./AuthContext";
 import "../styles/cardsearch.css";
 import PokemonCard from "./PokemonCard";
 import YuGiOhCard from "./YuGiOhCard";
+import FFTCGCard from "./FFTCGCard";
 
 const cardTypeOptions = [
   { value: "pokemon", label: "Pokémon" },
   { value: "yugioh", label: "Yu-Gi-Oh!" },
+  { value: "fftcg", label: "FF TCG" },
 ];
 
 const languageOptions = [
@@ -127,9 +129,10 @@ const CardSearchComponent = () => {
   }, [user, fetchCollection]);
 
   useEffect(() => {
-    const filteredCards = cards.filter(
-      (card) => !language || card.language === language.value
-    );
+    const filteredCards = cards.filter((card) => {
+      const cardLanguage = card.language || card.lang; // Use card.language if it exists; otherwise, fallback to card.lang
+      return !language || cardLanguage === language.value;
+    });
     setDisplayedCards(filteredCards.slice(0, currentCount));
   }, [cards, language, currentCount]);
 
@@ -138,6 +141,7 @@ const CardSearchComponent = () => {
     const baseURLs = {
       pokemon: `${process.env.REACT_APP_API_URL}/cards/pokemon/search?query=`,
       yugioh: `${process.env.REACT_APP_API_URL}/cards/yugioh/search?query=`,
+      fftcg: `${process.env.REACT_APP_API_URL}/cards/fftcg/search?query=`,
     };
 
     const url = `${baseURLs[cardType.value]}${encodeURIComponent(query)}`;
@@ -171,11 +175,34 @@ const CardSearchComponent = () => {
 
   const renderCard = (card) => {
     if (showImages) {
-      return cardType.value === "pokemon" ? (
-        <PokemonCard card={card} key={card.id} collection={collection} setCollection={setCollection}/>
-      ) : (
-        <YuGiOhCard card={card} key={card.id} collection={collection} setCollection={setCollection}/>
-      );
+      if (cardType.value === "pokemon") {
+        return (
+          <PokemonCard
+            card={card}
+            key={card.id}
+            collection={collection}
+            setCollection={setCollection}
+          />
+        );
+      } else if (cardType.value === "yugioh") {
+        return (
+          <YuGiOhCard
+            card={card}
+            key={card.id}
+            collection={collection}
+            setCollection={setCollection}
+          />
+        );
+      } else {
+        return (
+          <FFTCGCard
+            card={card}
+            key={card.id}
+            collection={collection}
+            setCollection={setCollection}
+          />
+        );
+      }
     } else {
       return (
         <div className="card-details" key={card.id}>
@@ -188,7 +215,7 @@ const CardSearchComponent = () => {
               : `Set Number: ${card.set_number}`}
           </p>
           <p>Rarity: {card.rarity}</p>
-          <p>Language: {card.language}</p>
+          <p>Language: {card.language ? card.language : card.lang}</p>
         </div>
       );
     }

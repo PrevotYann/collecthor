@@ -23,15 +23,16 @@ const Header = () => {
               <NavDropdown.Item as={Link} to="/cards/yugioh">
                 Yu-Gi-Oh!
               </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/cards/fftcg">
+                FF TCG
+              </NavDropdown.Item>
             </NavDropdown>
             {user ? (
               <>
                 <Nav.Link as={Link} to="/user">
                   {user.username}
                 </Nav.Link>
-                <Nav.Link onClick={logout}>
-                  Logout
-                </Nav.Link>
+                <Nav.Link onClick={logout}>Logout</Nav.Link>
               </>
             ) : (
               <>
