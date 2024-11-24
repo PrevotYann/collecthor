@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 
-import "../styles/FFTCGCard.css";
+import "../styles/NarutoKayouCard.css";
 
 // Function to aggregate card quantities in the collection
 const aggregateQuantities = (collection) => {
@@ -31,43 +31,25 @@ const aggregateQuantities = (collection) => {
 
 // Function to update prices
 const updatePrices = async (card) => {
-  const conditions = [
-    "poor",
-    "played",
-    "light_played",
-    "good",
-    "excellent",
-    "near_mint",
-    "mint",
-  ];
+  try {
+    const url = `${process.env.REACT_APP_API_URL}/items/table/cards_naruto-kayou/item/${card.id}/ebay/sold_prices`;
 
-  for (let condition of conditions) {
-    for (let firstEdition of [true, false]) {
-      const url = `${process.env.REACT_APP_API_URL}/items/table/cards_fftcg/item/${card.id}/condition/${condition}/first/${firstEdition}/ebay/sold_prices`;
-
-      try {
-        const response = await axios.post(url);
-        if (response.data) {
-          toast.success(
-            `Price updated (${condition} ${
-              firstEdition ? "1st" : ""
-            } | Median: ${response.data.median_price}, High: ${
-              response.data.highest_price
-            }, Low: ${response.data.lowest_price})`
-          );
-        } else {
-          toast.info(`No new pricing information for ${condition}.`);
-        }
-      } catch (error) {
-        toast.error(`Failed to update price for ${condition}.`);
-        console.error("Price update error:", error);
-      }
+    const response = await axios.post(url);
+    if (response.data) {
+      toast.success(
+        `Price updated | Median: ${response.data.median_price}, High: ${response.data.highest_price}, Low: ${response.data.lowest_price}`
+      );
+    } else {
+      toast.info(`No new pricing information available.`);
     }
+  } catch (error) {
+    toast.error(`Failed to update price.`);
+    console.error("Price update error:", error);
   }
 };
 
-// The main component for FFTCGCard
-const FFTCGCard = ({
+// The main component for NarutoCardCard
+const NarutoKayouCard = ({
   card,
   collection,
   setCollection,
@@ -75,10 +57,7 @@ const FFTCGCard = ({
   setSelectedCardIds,
 }) => {
   const { user } = useAuth();
-  const imageUrl = useState("/fftcg_back_card.webp");
   const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState("near_mint");
-  const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [extras, setExtras] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [priceData, setPriceData] = useState([]);
@@ -96,7 +75,7 @@ const FFTCGCard = ({
     setLoadingPrices(true);
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/items/table/cards_fftcg/item/${card.id}/ebay/prices/all`
+        `${process.env.REACT_APP_API_URL}/items/table/cards_naruto-kayou/item/${card.id}/ebay/prices/all`
       );
       setPriceData(response.data);
     } catch (error) {
@@ -120,9 +99,7 @@ const FFTCGCard = ({
       specific_id: card.id,
       user_item_details: {
         quantity,
-        condition,
         extras,
-        is_first_edition: isFirstEdition,
       },
       source_item_details: { ...card },
     };
@@ -133,12 +110,10 @@ const FFTCGCard = ({
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/items/table/cards_fftcg/item/${card.id}/user/${user.username}`,
+        `${process.env.REACT_APP_API_URL}/items/table/cards_naruto-kayou/item/${card.id}/user/${user.username}`,
         {
           quantity,
-          condition,
           extras,
-          is_first_edition: isFirstEdition,
         }
       );
       toast.success("Card added to collection!");
@@ -162,7 +137,7 @@ const FFTCGCard = ({
 
   return (
     <div
-      className={`fftcg-card-container ${
+      className={`naruto-card-container ${
         cardInCollection ? "in-collection" : ""
       }`}
     >
@@ -173,27 +148,21 @@ const FFTCGCard = ({
           onChange={handleCheckboxChange}
         />
       </div>
-      <div className="fftcg-card-image">
-        <img
-          src={card.full_image ? card.full_image : imageUrl}
-          alt={card.name}
-        />
+      <div className="naruto-card-image">
+        <img src={card.image || "/naruto_default_card.webp"} alt={card.name} />
         {cardInCollection && (
           <div className="quantity-button">
             {cardInCollection.user_item_details.quantity}
           </div>
         )}
       </div>
-      <div className="fftcg-card-details">
+      <div className="naruto-card-details">
         <h2>{card.name}</h2>
         <p>
-          <strong>Language:</strong> {card.lang}
+          <strong>Code:</strong> {card.code}
         </p>
         <p>
-          <strong>Set:</strong> {card.set}
-        </p>
-        <p>
-          <strong>Rarity:</strong> {card.rarity}
+          <strong>Set:</strong> {card.extension}
         </p>
         <div className="button-container">
           {user && !showAddForm && (
@@ -224,27 +193,6 @@ const FFTCGCard = ({
               onChange={(e) => setQuantity(e.target.value)}
               min="1"
             />
-            <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-            >
-              <option value="">Select Condition</option>
-              <option value="poor">Poor</option>
-              <option value="played">Played</option>
-              <option value="light_played">Light Played</option>
-              <option value="good">Good</option>
-              <option value="excellent">Excellent</option>
-              <option value="near_mint">Near Mint</option>
-              <option value="mint">Mint</option>
-            </select>
-            <label>
-              First Edition
-              <input
-                type="checkbox"
-                checked={isFirstEdition}
-                onChange={(e) => setIsFirstEdition(e.target.checked)}
-              />
-            </label>
             <input
               type="text"
               placeholder="Extras"
@@ -259,11 +207,9 @@ const FFTCGCard = ({
           <div className="price-details">
             {priceData.map((price) => (
               <div key={price.id} className="price-entry">
-                <p>
-                  {price.condition} {price.is_first_edition ? "(1st)" : ""}
-                </p>
+                <p>Price: ${price.ebay_median}</p>
+                <p>Highest: ${price.ebay_highest}</p>
                 <p>Lowest: ${price.ebay_lowest}</p>
-                <p>Median: ${price.ebay_median}</p>
               </div>
             ))}
           </div>
@@ -273,4 +219,4 @@ const FFTCGCard = ({
   );
 };
 
-export default FFTCGCard;
+export default NarutoKayouCard;

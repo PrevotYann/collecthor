@@ -1,0 +1,75 @@
+.naruto-card-details {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .naruto-card-image {
+    width: 200px;
+    height: auto;
+    margin-right: 20px;
+    border-radius: 10px;
+  }
+  
+  .card-info {
+    flex: 1;
+  }
+  
+  .card-info h2 {
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+  
+  .card-id,
+  .card-rarity,
+  .card-illustrator {
+    font-size: 1.2em;
+    margin: 5px 0;
+  }
+  
+  .card-attacks,
+  .card-weaknesses,
+  .card-types,
+  .card-description,
+  .card-language {
+    margin-top: 20px;
+  }
+  
+  .card-attacks h3,
+  .card-weaknesses h3,
+  .card-types h3,
+  .card-description h3,
+  .card-language h3 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  li {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+  }
+  
+  .card-description p,
+  .card-language p {
+    font-size: 1.1em;
+  }
+  
+  .card-attacks span,
+  .card-weaknesses span {
+    font-weight: bold;
+  }
+  

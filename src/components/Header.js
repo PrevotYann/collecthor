@@ -26,6 +26,9 @@ const Header = () => {
               <NavDropdown.Item as={Link} to="/cards/fftcg">
                 FF TCG
               </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/cards/naruto-kayou">
+                Naruto Kayou
+              </NavDropdown.Item>
             </NavDropdown>
             {user ? (
               <>

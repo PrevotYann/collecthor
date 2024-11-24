@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/YuGiOhCarrousel.css";
+import "../styles/CardsCarrousel.css";
 
 const YuGiOhCarrousel = ({ limit }) => {
   const [cards, setCards] = useState([]);

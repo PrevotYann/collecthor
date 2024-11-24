@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/YuGiOhCarrousel.css"; // Same CSS file, since the styles are reusable
+import "../styles/CardsCarrousel.css"; // Same CSS file, since the styles are reusable
 
 const FFTCGCarrousel = ({ limit }) => {
   const [cards, setCards] = useState([]);

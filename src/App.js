@@ -19,6 +19,8 @@ import Register from "./pages/Register";
 import User from "./pages/User";
 import FFTCGCards from "./pages/FFTCGCards";
 import FFTCGCardDetails from "./components/FFTCGCardDetails";
+import NarutoKayouCardDetails from "./components/NarutoKayouCardDetails";
+import NarutoKayouCards from "./pages/NarutoKayouCards";
 
 const App = () => {
   return (
@@ -32,6 +34,7 @@ const App = () => {
             <Route path="/cards/pokemon" element={<PokemonCards />} />
             <Route path="/cards/fftcg" element={<FFTCGCards />} />
             <Route path="/cards/yugioh" element={<YuGiOhCards />} />
+            <Route path="/cards/naruto-kayou" element={<NarutoKayouCards />} />
             <Route
               path="/yugioh/card-details"
               element={<YuGiOhCardDetails />}
@@ -41,6 +44,10 @@ const App = () => {
               element={<PokemonCardDetails />}
             />
             <Route path="/fftcg/card-details" element={<FFTCGCardDetails />} />
+            <Route
+              path="/naruto-kayou/card-details"
+              element={<NarutoKayouCardDetails />}
+            />
             <Route path="/user" element={<User />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

@@ -9,11 +9,13 @@ import "../styles/cardsearch.css";
 import PokemonCard from "./PokemonCard";
 import YuGiOhCard from "./YuGiOhCard";
 import FFTCGCard from "./FFTCGCard";
+import NarutoKayouCard from "./NarutoKayouCard";
 
 const cardTypeOptions = [
   { value: "pokemon", label: "Pokémon" },
   { value: "yugioh", label: "Yu-Gi-Oh!" },
   { value: "fftcg", label: "FF TCG" },
+  { value: "narutokayou", label: "Naruto Kayou" },
 ];
 
 const languageOptions = [
@@ -130,7 +132,7 @@ const CardSearchComponent = () => {
 
   useEffect(() => {
     const filteredCards = cards.filter((card) => {
-      const cardLanguage = card.language || card.lang; // Use card.language if it exists; otherwise, fallback to card.lang
+      const cardLanguage = card.language || card.lang || null; // Use card.language if it exists; otherwise, fallback to card.lang
       return !language || cardLanguage === language.value;
     });
     setDisplayedCards(filteredCards.slice(0, currentCount));
@@ -142,6 +144,7 @@ const CardSearchComponent = () => {
       pokemon: `${process.env.REACT_APP_API_URL}/cards/pokemon/search?query=`,
       yugioh: `${process.env.REACT_APP_API_URL}/cards/yugioh/search?query=`,
       fftcg: `${process.env.REACT_APP_API_URL}/cards/fftcg/search?query=`,
+      narutokayou: `${process.env.REACT_APP_API_URL}/cards/naruto-kayou/search?query=`,
     };
 
     const url = `${baseURLs[cardType.value]}${encodeURIComponent(query)}`;
@@ -193,9 +196,18 @@ const CardSearchComponent = () => {
             setCollection={setCollection}
           />
         );
-      } else {
+      } else if (cardType.value === "fftcg") {
         return (
           <FFTCGCard
+            card={card}
+            key={card.id}
+            collection={collection}
+            setCollection={setCollection}
+          />
+        );
+      } else {
+        return (
+          <NarutoKayouCard
             card={card}
             key={card.id}
             collection={collection}

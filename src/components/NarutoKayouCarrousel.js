@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/CardsCarrousel.css"; // Same CSS file, since the styles are reusable
+import "../styles/CardsCarrousel.css";
 
-const PokemonCarrousel = ({ limit }) => {
+const NarutoKayouCarrousel = ({ limit }) => {
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
@@ -14,7 +14,7 @@ const PokemonCarrousel = ({ limit }) => {
     const fetchCards = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/cards/pokemon/random/${limit}`
+          `${process.env.REACT_APP_API_URL}/cards/naruto-kayou/random/${limit}`
         );
         const data = await response.json();
         setCards(data);
@@ -60,7 +60,7 @@ const PokemonCarrousel = ({ limit }) => {
   };
 
   const handleCardClick = (card) => {
-    navigate(`/pokemon/card-details`, { state: { card } });
+    navigate(`/naruto-kayou/card-details`, { state: { card } });
   };
 
   return (
@@ -110,16 +110,10 @@ const PokemonCarrousel = ({ limit }) => {
 };
 
 const CardItem = ({ card, onClick, imageCache }) => {
-  const fallbackImageUrl = "/pokemon_back_card.webp"; // Fallback image URL for errors
-
   return (
     <div className="carousel-card" onClick={onClick}>
       <img
-        src={
-          card.image
-            ? card.image + process.env.REACT_APP_POKEMON_IMAGE_SUFFIX_LOW
-            : fallbackImageUrl
-        }
+        src={card.image ? card.image : ""}
         alt={card.name}
         className="carousel-image"
       />
@@ -131,4 +125,4 @@ const CardItem = ({ card, onClick, imageCache }) => {
   );
 };
 
-export default PokemonCarrousel;
+export default NarutoKayouCarrousel;
