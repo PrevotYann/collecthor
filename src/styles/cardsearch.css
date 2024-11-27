@@ -1,133 +1,163 @@
 /* General styling for the search container */
 .search-container {
-    max-width: 1499px;
-    margin: auto;
-    padding: 20px;
-  }
-  
+  max-width: 1499px;
+  margin: auto;
+  padding: 20px;
+}
+
 /* Styling for the search bar */
 .search-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between; /* Ensures items are spread out */
-    align-items: center;
-    gap: 10px; /* Provides space between flex items */
-    margin-bottom: 20px;
-  }
-  
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; /* Ensures items are spread out */
+  align-items: center;
+  gap: 10px; /* Provides space between flex items */
+  margin-bottom: 20px;
+}
+
 /* Specific styles for selects and input to ensure they don't stretch too much */
 .select-dropdown{
-    flex: 1 1 240px; /* Allows shrink but also sets a min-width */
-    font-size: 16px; /* Adequate font size for better readability */
-  }
+  flex: 1 1 240px; /* Allows shrink but also sets a min-width */
+  font-size: 16px; /* Adequate font size for better readability */
+}
 
 .search-input {
-  flex: 1 1 480px;  /* Flex settings to allow growth and shrinking with a reasonable minimum width */
-  padding: 8px 12px; /* Comfortable padding inside the input */
-  border: 2px solid #ccc; /* Subtle border */
-  border-radius: 5px; /* Rounded corners for a modern, soft look */
-  outline: none; /* Removes the outline to avoid browser default styles */
-  font-size: 16px; /* Adequate font size for better readability */
-  color: #333; /* Darker text for better readability */
-  background-color: #fff; /* White background to keep it clean and simple */
-  transition: border-color 0.3s; /* Smooth transition for interactions */
+flex: 1 1 480px;  /* Flex settings to allow growth and shrinking with a reasonable minimum width */
+padding: 8px 12px; /* Comfortable padding inside the input */
+border: 2px solid #ccc; /* Subtle border */
+border-radius: 5px; /* Rounded corners for a modern, soft look */
+outline: none; /* Removes the outline to avoid browser default styles */
+font-size: 16px; /* Adequate font size for better readability */
+color: #333; /* Darker text for better readability */
+background-color: #fff; /* White background to keep it clean and simple */
+transition: border-color 0.3s; /* Smooth transition for interactions */
 
-  /* Increase the border thickness and change color when the input is focused to give feedback */
-  &:focus {
-      border-color: #0056b3; /* A nice blue that stands out when focused */
-      box-shadow: 0 0 8px rgba(0, 86, 179, 0.2); /* Subtle shadow to 'lift' the element on focus */
-  }
+/* Increase the border thickness and change color when the input is focused to give feedback */
+&:focus {
+    border-color: #0056b3; /* A nice blue that stands out when focused */
+    box-shadow: 0 0 8px rgba(0, 86, 179, 0.2); /* Subtle shadow to 'lift' the element on focus */
+}
 
-  /* Placeholder styling to match the input style */
-  &::placeholder {
-      color: #aaa; /* Lighter text for placeholders */
+/* Placeholder styling to match the input style */
+&::placeholder {
+    color: #aaa; /* Lighter text for placeholders */
+}
+}
+
+.search-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* Grid layout for cards */
+.cards-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Creates a responsive grid layout */
+  gap: 20px;
+  padding: 20px 0;
+}
+
+/* Button to load more cards */
+.load-more-button {
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+/* Handling larger screens - adjusting the grid to fit more cards or larger cards */
+@media (min-width: 1400px) {
+  .cards-display {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Increase min-width of each card */
   }
 }
 
-  
-.search-button {
-    padding: 8px 16px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-/* Grid layout for cards */
-.cards-display {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Creates a responsive grid layout */
-    gap: 20px;
-    padding: 20px 0;
-  }
-  
-/* Button to load more cards */
-.load-more-button {
-    width: 100%;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    text-align: center;
-    border: none;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-  
-/* Handling larger screens - adjusting the grid to fit more cards or larger cards */
-@media (min-width: 1400px) {
-    .cards-display {
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Increase min-width of each card */
-    }
-  }
-
 .card-details {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    padding: 10px 20px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    width: 100%; /* Ensures each card detail takes full width */
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  width: 100%; /* Ensures each card detail takes full width */
+  padding-right: 40px;
+  position: relative; /* Add this to make the badge position relative to the container */
+}
+
 .card-details p {
-    margin: 0 10px;
-    flex: 1;
-    text-align: center;
-  }
+  margin: 0 10px;
+  flex: 1;
+  text-align: center;
+}
 
 .loader-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 200px; /* Enough space for the loader and text */
-    text-align: center;
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px; /* Enough space for the loader and text */
+  text-align: center;
+}
+
 .inner-loader-container {
-    display: flex;
-    flex-direction: column; /* Stack spinner and text vertically */
-    align-items: center; /* Align horizontally */
-  }
-  
+  display: flex;
+  flex-direction: column; /* Stack spinner and text vertically */
+  align-items: center; /* Align horizontally */
+}
+
 .loader {
-    border: 8px solid #f3f3f3; /* Light grey */
-    border-top: 8px solid #3498db; /* Blue, can adjust color */
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    animation: spin 2s linear infinite;
-  }
-  
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue, can adjust color */
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 2s linear infinite;
+}
+
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .loader-text {
-    margin-top: 10px; /* Space between the loader and the text */
-    font-size: 18px;
-    color: #666;
+  margin-top: 10px; /* Space between the loader and the text */
+  font-size: 18px;
+  color: #666;
+}
+
+/* Quantity badge */
+.quantity-badge {
+  background-color: #00c3ca;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  position: absolute; /* Position relative to the .card-details container */
+  top: 10px;
+  right: 10px; /* Adjust based on design */
+  z-index: 1; /* Ensure the badge stays on top */
+}
+
+.card-details.in-collection {
+  background-color: #ccfcff; /* Light green/blue color */
+}
+
+/* Add responsiveness to ensure badge stays within bounds */
+@media (max-width: 600px) {
+  .quantity-badge {
+    font-size: 12px; /* Reduce size for smaller screens */
+    padding: 2px 6px; /* Adjust padding */
   }
+
+  .card-details {
+    padding-right: 20px; /* Reduce padding on small screens to fit better */
+  }
+}

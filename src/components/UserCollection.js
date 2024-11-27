@@ -147,32 +147,52 @@ const UserCardsTable = () => {
     direction: "desc",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
-  const EURO_TO_DOLLAR_RATE = 1.09671;
+  const [priceAggregates, setPriceAggregates] = useState({
+    low: 0,
+    high: 0,
+    mean: 0,
+    median: 0,
+    currency: "DOLLAR",
+  });
 
-  const fetchCollection = async (page = 1, size = 20) => {
+  const pageSize = 20;
+  const EURO_TO_DOLLAR_RATE = 1.058314;
+
+  const fetchCollection = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/items/user/v2/${user.username}`,
-        {
-          params: {
-            page,
-            size,
-          },
-        }
+        `${process.env.REACT_APP_API_URL}/items/user/v3/${user.username}`
       );
-      setCollection(response.data.items || []);
+      setCollection(response.data || []); // Safely handle items
     } catch (error) {
       console.error("Failed to fetch collection:", error);
     }
   };
 
+  // Fetch price aggregates
+  const fetchPriceAggregates = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/items/user/${user.username}/collection/prices`
+      );
+      setPriceAggregates(response.data);
+    } catch (error) {
+      console.error("Failed to fetch price aggregates:", error);
+    }
+  };
+
   useEffect(() => {
     if (user && user.username) {
-      fetchCollection(currentPage, pageSize);
+      fetchCollection();
+      fetchPriceAggregates();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentPage, pageSize]);
+  }, [user]);
+
+  const getConvertedValue = (value) =>
+    isEuroDisplayed
+      ? (value / EURO_TO_DOLLAR_RATE).toFixed(2)
+      : value.toFixed(2);
 
   const handleEditItem = async () => {
     try {
@@ -191,7 +211,7 @@ const UserCardsTable = () => {
         }
       );
       setEditItem(null);
-      fetchCollection(currentPage, pageSize);
+      fetchCollection();
       toast.success("Edit successful.");
       console.log("Edit successful", response.data);
     } catch (error) {
@@ -208,7 +228,7 @@ const UserCardsTable = () => {
       await axios.delete(
         `${process.env.REACT_APP_API_URL}/items/${userItemId}/user/${user.username}/delete`
       );
-      fetchCollection(currentPage, pageSize); // Refresh the list
+      fetchCollection(); // Refresh the list
       toast.success("Deleted successfully.");
     } catch (error) {
       console.error("Failed to delete item:", error);
@@ -230,28 +250,57 @@ const UserCardsTable = () => {
   const filteredCollection = collection.filter(
     (card) =>
       (sourceTableFilter === "" || card.source_table === sourceTableFilter) &&
-      (languageFilter === "" ||
-        card.source_item_details.language === languageFilter) &&
-      card.source_item_details.name
-        .toLowerCase()
-        .includes(searchName.toLowerCase())
+      (languageFilter === "" || card.language === languageFilter) &&
+      card.item_name.toLowerCase().includes(searchName.toLowerCase())
   );
 
   const sortCollection = (collection, config) => {
     if (!config.key) return collection;
+
     const sorted = [...collection].sort((a, b) => {
       let aKey = a,
         bKey = b;
+
+      // Navigate through nested keys (e.g., "prices.low" or "code")
       for (const key of config.key.split(".")) {
         aKey = aKey[key];
         bKey = bKey[key];
       }
-      aKey = parseFloat(aKey) || 0;
-      bKey = parseFloat(bKey) || 0;
+
+      // Special handling for alphanumeric codes (natural sort)
+      const naturalSort = (a, b) => {
+        return a.localeCompare(b, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        });
+      };
+
+      // If the key is 'code', use naturalSort; otherwise, use numeric comparison
+      if (
+        config.key === "code" ||
+        config.key === "item_name" ||
+        config.key === "type" ||
+        config.key === "language"
+      ) {
+        return config.direction === "desc"
+          ? naturalSort(aKey, bKey)
+          : naturalSort(bKey, aKey);
+      }
+
+      // For other keys (like prices), parse as numbers
+      const normalizeValue = (value) =>
+        typeof value === "string"
+          ? parseFloat(value.replace(/[^0-9.-]+/g, "")) || 0
+          : parseFloat(value) || 0;
+
+      aKey = normalizeValue(aKey);
+      bKey = normalizeValue(bKey);
+
       if (aKey < bKey) return config.direction === "asc" ? -1 : 1;
       if (aKey > bKey) return config.direction === "asc" ? 1 : -1;
       return 0;
     });
+
     return sorted;
   };
 
@@ -265,30 +314,11 @@ const UserCardsTable = () => {
     setSortConfig({ key, direction });
   };
 
-  const calculateTotalPrices = (cards, isEuroDisplayed) => {
-    let totalLow = 0,
-      totalHigh = 0,
-      totalMedian = 0,
-      totalMean = 0;
-
-    cards.forEach((card) => {
-      let factor = 1; // Default factor for DOLLAR
-      if (card.prices.currency === "EURO" && !isEuroDisplayed) {
-        factor = EURO_TO_DOLLAR_RATE;
-      }
-      if (card.prices.currency === "DOLLAR" && isEuroDisplayed) {
-        factor = 1 / EURO_TO_DOLLAR_RATE;
-      }
-      totalLow += parseFloat(card.prices.low || 0) * factor;
-      totalHigh += parseFloat(card.prices.high || 0) * factor;
-      totalMedian += parseFloat(card.prices.median || 0) * factor;
-      totalMean += parseFloat(card.prices.mean || 0) * factor;
-    });
-
-    return { totalLow, totalHigh, totalMedian, totalMean };
-  };
-
-  const totals = calculateTotalPrices(sortedCollection, isEuroDisplayed);
+  // Paginate the sorted and filtered collection
+  const paginatedCollection = sortedCollection.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const handlePageChange = (event, newPage) => {
     setCurrentPage(newPage);
@@ -312,15 +342,15 @@ const UserCardsTable = () => {
           >
             {isEuroDisplayed ? "Show in $" : "Show in €"}
           </Button>
-          {["Low", "High", "Median", "Mean"].map((key) => (
+          {["low", "high", "median", "mean"].map((key) => (
             <Card key={key} variant="outlined">
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
-                  Total {key}
+                  Total {key.charAt(0).toUpperCase() + key.slice(1)}
                 </Typography>
                 <Typography variant="h6">
                   {isEuroDisplayed ? "€" : "$"}
-                  {totals[`total${key}`].toFixed(2)}
+                  {getConvertedValue(priceAggregates[key])}
                 </Typography>
               </CardContent>
             </Card>
@@ -376,9 +406,54 @@ const UserCardsTable = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Language</TableCell>
+                <TableCell
+                  onClick={() => handleSort("item_name")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Name{" "}
+                  {sortConfig.key === "item_name" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
+                    ))}
+                </TableCell>
+                <TableCell
+                  onClick={() => handleSort("type")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Type{" "}
+                  {sortConfig.key === "type" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
+                    ))}
+                </TableCell>
+                <TableCell
+                  onClick={() => handleSort("language")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Language{" "}
+                  {sortConfig.key === "language" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
+                    ))}
+                </TableCell>
+                <TableCell
+                  onClick={() => handleSort("code")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Code{" "}
+                  {sortConfig.key === "code" &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowDownwardIcon />
+                    ) : (
+                      <ArrowUpwardIcon />
+                    ))}
+                </TableCell>
                 <TableCell
                   onClick={() => handleSort("prices.low")}
                   style={{ cursor: "pointer" }}
@@ -431,16 +506,23 @@ const UserCardsTable = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedCollection.map((card) => (
+              {paginatedCollection.map((card) => (
                 <TableRow key={card.user_item_id}>
-                  <TableCell>{card.source_item_details.name}</TableCell>
+                  <TableCell>
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: card.item_name,
+                      }}
+                    />
+                  </TableCell>
                   <TableCell>{cardTypeDisplay[card.source_table]}</TableCell>
-                  <TableCell>{card.source_item_details.language}</TableCell>
+                  <TableCell>{card.language}</TableCell>
+                  <TableCell>{card.code}</TableCell>
                   <TableCell>
                     {isEuroDisplayed
                       ? "€" +
                         (
-                          parseFloat(card.prices.low) * EURO_TO_DOLLAR_RATE
+                          parseFloat(card.prices.low) / EURO_TO_DOLLAR_RATE
                         ).toFixed(2)
                       : "$" + parseFloat(card.prices.low).toFixed(2)}
                   </TableCell>
@@ -448,7 +530,7 @@ const UserCardsTable = () => {
                     {isEuroDisplayed
                       ? "€" +
                         (
-                          parseFloat(card.prices.high) * EURO_TO_DOLLAR_RATE
+                          parseFloat(card.prices.high) / EURO_TO_DOLLAR_RATE
                         ).toFixed(2)
                       : "$" + parseFloat(card.prices.high).toFixed(2)}
                   </TableCell>
@@ -456,7 +538,7 @@ const UserCardsTable = () => {
                     {isEuroDisplayed
                       ? "€" +
                         (
-                          parseFloat(card.prices.median) * EURO_TO_DOLLAR_RATE
+                          parseFloat(card.prices.median) / EURO_TO_DOLLAR_RATE
                         ).toFixed(2)
                       : "$" + parseFloat(card.prices.median).toFixed(2)}
                   </TableCell>
@@ -464,7 +546,7 @@ const UserCardsTable = () => {
                     {isEuroDisplayed
                       ? "€" +
                         (
-                          parseFloat(card.prices.mean) * EURO_TO_DOLLAR_RATE
+                          parseFloat(card.prices.mean) / EURO_TO_DOLLAR_RATE
                         ).toFixed(2)
                       : "$" + parseFloat(card.prices.mean).toFixed(2)}
                   </TableCell>
@@ -486,13 +568,24 @@ const UserCardsTable = () => {
             marginTop: "20px",
           }}
         >
-          <Pagination
-            count={Math.ceil(collection.totalCount / pageSize)}
-            page={currentPage}
-            onChange={handlePageChange}
-            variant="outlined"
-            shape="rounded"
-          />
+          {/* Pagination */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "20px",
+            }}
+          >
+            {sortedCollection.length > pageSize && (
+              <Pagination
+                count={Math.ceil(sortedCollection.length / pageSize)}
+                page={currentPage}
+                onChange={handlePageChange}
+                variant="outlined"
+                shape="rounded"
+              />
+            )}
+          </div>
         </div>
         <Dialog open={!!editItem} onClose={() => setEditItem(null)}>
           <DialogTitle>Edit Item</DialogTitle>

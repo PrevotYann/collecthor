@@ -74,6 +74,7 @@ const PokemonCard = ({
   setCollection,
   selectedCardIds,
   setSelectedCardIds,
+  displayBox = true,
 }) => {
   const { user } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -166,14 +167,16 @@ const PokemonCard = ({
         cardInCollection ? "in-collection" : ""
       }`}
     >
-      <div className="select-checkbox">
-        <input
-          style={{ marginRight: "1rem" }}
-          type="checkbox"
-          checked={isChecked}
-          onChange={handleCheckboxChange}
-        />
-      </div>
+      {displayBox && (
+        <div className="select-checkbox">
+          <input
+            style={{ marginRight: "1rem" }}
+            type="checkbox"
+            checked={isChecked}
+            onChange={handleCheckboxChange}
+          />
+        </div>
+      )}
       <div className="pokemon-card-image">
         <img
           src={

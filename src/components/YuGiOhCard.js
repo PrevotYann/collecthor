@@ -74,6 +74,7 @@ const YuGiOhCard = ({
   setCollection,
   selectedCardIds,
   setSelectedCardIds,
+  displayBox = true,
 }) => {
   const { user } = useAuth();
   const [imageUrl, setImageUrl] = useState("/yugioh_back_card.webp");
@@ -190,13 +191,16 @@ const YuGiOhCard = ({
         cardInCollection ? "in-collection" : ""
       }`}
     >
-      <div className="select-checkbox">
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={handleCheckboxChange}
-        />
-      </div>
+      {displayBox && (
+        <div className="select-checkbox">
+          <input
+            style={{ marginRight: "1rem" }}
+            type="checkbox"
+            checked={isChecked}
+            onChange={handleCheckboxChange}
+          />
+        </div>
+      )}
       <div className="yugioh-card-image">
         <img src={imageUrl} alt={card.name} />
         {cardInCollection && (

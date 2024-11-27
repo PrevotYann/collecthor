@@ -101,6 +101,29 @@ const languageOptions = [
   },
 ];
 
+const aggregateQuantities = (collection) => {
+  if (!Array.isArray(collection)) {
+    return [];
+  }
+  return collection.reduce((acc, item) => {
+    const existing = acc.find(
+      (entry) => entry.specific_id === item.specific_id
+    );
+    if (existing) {
+      existing.user_item_details.quantity += item.user_item_details?.quantity;
+    } else {
+      acc.push({
+        ...item,
+        user_item_details: {
+          ...item.user_item_details,
+          quantity: item.user_item_details.quantity,
+        },
+      });
+    }
+    return acc;
+  }, []);
+};
+
 const CardSearchComponent = () => {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
@@ -112,7 +135,7 @@ const CardSearchComponent = () => {
   const [showImages, setShowImages] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [collection, setCollection] = useState(false);
-
+  const aggregatedCollection = aggregateQuantities(collection);
   const fetchCollection = useCallback(async () => {
     try {
       const response = await axios.get(
@@ -177,7 +200,37 @@ const CardSearchComponent = () => {
   };
 
   const renderCard = (card) => {
+    const cardInCollection = aggregatedCollection.find(
+      (item) => item.specific_id === card.id
+    );
+
+    const cardDetails = (
+      <div
+        className={`card-details ${cardInCollection ? "in-collection" : ""}`}
+        key={card.id}
+      >
+        <p>
+          <b>{card.name}</b>
+        </p>
+        <p>
+          {cardType.value === "pokemon"
+            ? `Set Number: ${card.local_id}`
+            : cardType.value === "yugioh"
+            ? `Set Number: ${card.set_number}`
+            : `Set Number: ${card.code}`}
+        </p>
+        <p>Rarity: {card.rarity}</p>
+        <p>Language: {card.language ? card.language : card.lang}</p>
+        {cardInCollection && (
+          <div className="quantity-badge">
+            {cardInCollection.user_item_details.quantity}
+          </div>
+        )}
+      </div>
+    );
+
     if (showImages) {
+      // This is the image view
       if (cardType.value === "pokemon") {
         return (
           <PokemonCard
@@ -185,6 +238,7 @@ const CardSearchComponent = () => {
             key={card.id}
             collection={collection}
             setCollection={setCollection}
+            displayBox={false}
           />
         );
       } else if (cardType.value === "yugioh") {
@@ -194,6 +248,7 @@ const CardSearchComponent = () => {
             key={card.id}
             collection={collection}
             setCollection={setCollection}
+            displayBox={false}
           />
         );
       } else if (cardType.value === "fftcg") {
@@ -203,6 +258,7 @@ const CardSearchComponent = () => {
             key={card.id}
             collection={collection}
             setCollection={setCollection}
+            displayBox={false}
           />
         );
       } else {
@@ -212,24 +268,13 @@ const CardSearchComponent = () => {
             key={card.id}
             collection={collection}
             setCollection={setCollection}
+            displayBox={false}
           />
         );
       }
     } else {
-      return (
-        <div className="card-details" key={card.id}>
-          <p>
-            <b>{card.name}</b>
-          </p>
-          <p>
-            {cardType.value === "pokemon"
-              ? `Set Number: ${card.local_id}`
-              : `Set Number: ${card.set_number}`}
-          </p>
-          <p>Rarity: {card.rarity}</p>
-          <p>Language: {card.language ? card.language : card.lang}</p>
-        </div>
-      );
+      // This is the list/no-image view
+      return cardDetails;
     }
   };
 

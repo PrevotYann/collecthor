@@ -73,6 +73,7 @@ const FFTCGCard = ({
   setCollection,
   selectedCardIds,
   setSelectedCardIds,
+  displayBox = true,
 }) => {
   const { user } = useAuth();
   const imageUrl = useState("/fftcg_back_card.webp");
@@ -166,13 +167,16 @@ const FFTCGCard = ({
         cardInCollection ? "in-collection" : ""
       }`}
     >
-      <div className="select-checkbox">
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={handleCheckboxChange}
-        />
-      </div>
+      {displayBox && (
+        <div className="select-checkbox">
+          <input
+            style={{ marginRight: "1rem" }}
+            type="checkbox"
+            checked={isChecked}
+            onChange={handleCheckboxChange}
+          />
+        </div>
+      )}
       <div className="fftcg-card-image">
         <img
           src={card.full_image ? card.full_image : imageUrl}

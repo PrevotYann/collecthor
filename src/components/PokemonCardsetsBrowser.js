@@ -196,7 +196,7 @@ const PorkemonCardsetsBrowser = () => {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>Language</TableCell>
-              <TableCell>Set number</TableCell>
+              <TableCell>Set</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -209,7 +209,7 @@ const PorkemonCardsetsBrowser = () => {
               >
                 <TableCell>{cardset.name}</TableCell>
                 <TableCell>{cardset.language}</TableCell>
-                <TableCell>{cardset.local_id}</TableCell>
+                <TableCell>{cardset.prefix}</TableCell>
               </TableRow>
             ))}
           </TableBody>
